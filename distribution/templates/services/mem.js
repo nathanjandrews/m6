@@ -116,6 +116,64 @@ const mem = (config) => {
         global.distribution.local.comm.send(message, remote, cb);
       });
     },
+
+    /**
+     * Mem RECONF method
+     * @param {Object} group - old group and its nodes
+     * @param {Object} group.sid
+     * @param {string} group.sid.ip
+     * @param {number} group.sid.port
+     * @param {ServiceCallback} callback
+     */
+    reconf: (group, callback) => {
+      let prevCnt = 0;
+      let diffCnt = 0;
+      const prevKeys = [];
+      Object.values(group).map((node) => {
+        const getRemote = {
+          service: 'mem',
+          method: 'get',
+          node: node,
+        };
+        global.distribution.local.comm.send(
+            [{key: null, gid: context.gid}],
+            getRemote,
+            (e, keys) => {
+              prevCnt++;
+              prevKeys.push(...keys);
+              if (prevCnt == Object.keys(group).length) {
+                const prevKids = prevKeys.map((k) => id.getID(k));
+                const prevNids = Object.values(group).map((n) => id.getNID(n));
+                const prevIdxs = prevKids.map((k) => context.hash(k, prevNids));
+
+                global.distribution.local.groups.get(context.gid, (e, node) => {
+                  const currNids = Object.values(node).map((n) => id.getNID(n));
+                  const currIdxs = prevKids.map((k) => context.hash(k, currNids));
+                  const diffCnts = currIdxs.filter((idx, i) => idx != prevIdxs[i]).length;
+
+                  currIdxs.filter((idx, i) => {
+                    if (idx != prevIdxs[i]) {
+                      const prevNode = group[prevIdxs[i].substring(0, 5)];
+                      const currNode = node[idx.substring(0, 5)];
+                      const message = [{gid: context.gid, key: prevKeys[i]}];
+                      const delRemote = {node: prevNode, service: 'mem', method: 'del'};
+                      const putRemote = {node: currNode, service: 'mem', method: 'put'};
+                      global.distribution.local.comm.send(message, delRemote, (e, v) => {
+                        global.distribution.local.comm.send([v, message[0]], putRemote, (e, v) => {
+                          diffCnt++;
+                          if (diffCnt == diffCnts) {
+                            callback();
+                          }
+                        });
+                      });
+                    }
+                  });
+                });
+              }
+            },
+        );
+      });
+    },
   };
 };
 

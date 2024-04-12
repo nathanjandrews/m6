@@ -922,7 +922,7 @@ test('(2 pts) all.store.reconf(naiveHash)', (done) => {
   // key 0 ends up on n6, while keys 1-4 end up on n4
   // (the following console.logs should confirm that)
   nodesPicked.forEach(
-      (node, key) => console.log('BEFORE! key: ', key, 'node: ', node),
+      (node, key) => console.log('BEFORE! key: ', keys[key], 'node: ', node),
   );
 
   // Then, we remove n5 from the list of nodes,
@@ -939,7 +939,7 @@ test('(2 pts) all.store.reconf(naiveHash)', (done) => {
   // After removal, all keys end up on n6
   // (Again, the console.logs should be consistent with that!)
   nodesPickedAfter.forEach(
-      (node, key) => console.log('AFTER! key: ', key, 'node: ', node),
+      (node, key) => console.log('AFTER! key: ', keys[key], 'node: ', node),
   );
 
   // This function will be called after we put items in nodes
