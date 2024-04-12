@@ -18,7 +18,9 @@ const comm = {};
 comm.send = function(message, remote, callback) {
   const cb = callback || function() {};
 
-  const url = new URL(`http://${remote.node.ip}:${remote.node.port}/${remote.service}/${remote.method}`);
+  const url = new URL(
+      `http://${remote.node.ip}:${remote.node.port}/${remote.service}/${remote.method}`,
+  );
   const request = http.request(url, {method: 'PUT'}, (response) => {
     let responseBody = '';
     response.on('data', (chunk) => {
