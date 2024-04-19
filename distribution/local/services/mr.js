@@ -54,7 +54,7 @@ mr.map = async (context, keys, mapFn, callback) => {
       cb(null, true),
     );
   } else {
-    mr.storageKeys = keys;
+    mr.storageKey = keys;
     mapResults.map((res, i) => {
       memStore.put(res, { gid: context.storeGid, key: keys[i] }, (e, v) => {});
     });
