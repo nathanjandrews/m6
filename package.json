@@ -22,6 +22,9 @@
     "jest": "^27.4.7"
   },
   "dependencies": {
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "html-to-text": "^9.0.5",
+    "jsdom": "^23.2.0",
+    "natural": "^6.10.4"
   }
 }
