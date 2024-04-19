@@ -20,11 +20,20 @@ for (const node of nodes) {
 
 const groupConfig = { gid: 'crawler', hash: id.consistentHash };
 groups(groupConfig).put(groupConfig, crawlerGroup, (e, v) => {
-  loadUrls();
+  let cnt = 0;
+  for (const node of nodes) {
+    distribution.crawler.groups.add('crawler', node, (e, v) => {
+      cnt++;
+      if (cnt === nodes.length) {
+        loadUrls();
+      }
+    });
+  }
 });
 
 const loadUrls = () => {
   let cntr = 0;
+
 
   // We send the dataset to the cluster
   dataset.forEach((url) => {

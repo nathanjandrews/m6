@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf ./store/*
+# rm -rf ./store/*
 
 node_configs=()
 for ((i = 0; i < 5; i++)); do

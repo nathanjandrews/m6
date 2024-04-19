@@ -48,11 +48,12 @@ store.put = async function(value, nullableKey, callback) {
   }
 
   let filePath;
+  const fileName = Buffer.from(itemKey).toString('base64');
   if (groupKey === null) {
-    filePath = path.join(LOCAL_DIR_PATH, itemKey);
+    filePath = path.join(LOCAL_DIR_PATH, fileName);
   } else {
     const dirPath = path.join(GROUPS_DIR_PATH, groupKey);
-    filePath = path.join(dirPath, itemKey);
+    filePath = path.join(dirPath, fileName);
     await createDirectory(dirPath);
   }
 
@@ -94,14 +95,17 @@ store.get = async function(nullableKey, callback) {
   if (itemKey === null) {
     try {
       const fileNames = await fs.readdir(dirPath);
-      cb(null, fileNames);
+      const keys = fileNames
+        .map((k) => Buffer.from(k, 'base64').toString());
+      cb(null, keys);
     } catch (error) {
       cb(error);
     }
     return;
   }
 
-  const filePath = path.join(dirPath, itemKey);
+  const fileName = Buffer.from(itemKey).toString('base64');
+  const filePath = path.join(dirPath, fileName);
   try {
     const serializedValue = (await fs.readFile(filePath)).toString();
     cb(null, deserialize(serializedValue));
@@ -141,11 +145,12 @@ store.del = async function(nullableKey, callback) {
   }
 
   let filePath;
+  const fileName = Buffer.from(itemKey).toString('base64');
   if (groupKey === null) {
-    filePath = path.join(LOCAL_DIR_PATH, itemKey);
+    filePath = path.join(LOCAL_DIR_PATH, fileName);
   } else {
     filePath =
-      path.join(GROUPS_DIR_PATH, groupKey, itemKey);
+      path.join(GROUPS_DIR_PATH, groupKey, fileName);
   }
 
   try {

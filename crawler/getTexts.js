@@ -37,23 +37,8 @@ const crawlerWorkflow = () => {
           rejectUnauthorized: false,
         },
         (response) => {
-          // const links = [];
-
           let data = '';
           response.on('data', (chunk) => {
-            /**
-             const chunkString = chunk.toString(); // Convert chunk to string
-             const regex = /<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1/g; // Regex to extract URLs from anchor elements
-             let match;
-             while ((match = regex.exec(chunkString)) !== null) {
-               const url = match[2];
-               if (url.startsWith('https://')) {
-                 links.push(url);
-                } else if (url.startsWith('/')) {
-                  links.push('https://' + hostname + url);
-                }
-              }
-            */
             data += chunk;
           });
           response.on('error', (error) => {
@@ -84,8 +69,8 @@ const crawlerWorkflow = () => {
           keys: v,
           map: m1,
           reduce: r1,
-          cleanup: false,
-          promise: true,
+          // cleanup: false,
+          // promise: true,
           // compress: 'gzip',
         },
         (e, v) => {
