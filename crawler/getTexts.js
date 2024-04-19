@@ -2,6 +2,7 @@ global.nodeConfig = { ip: '127.0.0.1', port: 8080 };
 const distribution = require('../distribution');
 const id = distribution.util.id;
 const groups = require('../distribution/all/groups');
+const TYPES = require('../distribution/util/types.js');
 
 // TODO: find a way to auto config the ip from ec2
 const nodes = require('./nodes.json');
@@ -21,41 +22,15 @@ groups(crawlerConfig).put(crawlerConfig, crawlerGroup, (e, v) => {
 
 const crawlerWorkflow = () => {
   const m1 = (key, value) => {
-    const https = global.require('https');
-    const hostname = new URL(value).hostname;
-    const path = new URL(value).pathname;
-    console.log('visiting:', value);
-    return new Promise((resolve, reject) => {
-      https.get(
-        {
-          hostname: hostname,
-          path: path,
-          headers: {
-            'User-Agent': 'Mozilla/5.0',
-            'Content-Type': 'text/html',
-          },
-          rejectUnauthorized: false,
-        },
-        (response) => {
-          let data = '';
-          response.on('data', (chunk) => {
-            data += chunk;
-          });
-          response.on('error', (error) => {
-            console.error(`Error: ${error.message}`);
-            reject(error);
-          });
-          response.on('end', () => {
-            // console.log('crwaler.workflow.test.js: m1: data:', data);
-            const newKey = value;
-            const text = data;
-            const obj = {};
-            obj[newKey] = text;
-            resolve(obj);
-          });
-        },
-      );
+    const fetch = global.require('sync-fetch');
+    global.process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+
+    const res = fetch(value, {
+      headers: { 'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html' },
     });
+    const obj = {};
+    obj[value] = res.text();
+    return obj;
   };
 
   const r1 = (key, values) => {
@@ -64,24 +39,24 @@ const crawlerWorkflow = () => {
 
   const doMapReduce = (cb) => {
     distribution.crawler.store.get(null, (e, v) => {
-      distribution.scraper.mr.exec(
-        {
-          keys: v,
-          map: m1,
-          reduce: r1,
-          // cleanup: false,
-          // promise: true,
-          // compress: 'gzip',
-        },
-        (e, v) => {
-          try {
-            console.log('[crawler]:', v);
-            graceShutDown();
-          } catch (e) {
-            console.error('[crawler error]:', e);
-          }
-        },
-      );
+      /**
+       * @type {TYPES.MapReduceConfiguration}
+       */
+      const config = {
+        keys: v,
+        map: m1,
+        reduce: r1,
+        storeGid: 'scraper',
+        compact: false,  // split the content
+      };
+      distribution.crawler.mr.exec(config, (e, v) => {
+        try {
+          // console.log('[crawler]:', v);
+          graceShutDown();
+        } catch (e) {
+          console.error('[crawler error]:', e);
+        }
+      });
     });
   };
 

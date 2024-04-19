@@ -42,6 +42,7 @@ const distribution = {
 
 global.distribution = distribution;
 global.require = require;
+global.process = process;
 
 distribution['all'] = {};
 distribution['all'].status = require('./distribution/all/status')({ gid: 'all' });
