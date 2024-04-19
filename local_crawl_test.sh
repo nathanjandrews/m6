@@ -3,7 +3,7 @@
 # rm -rf ./store/*
 
 node_configs=()
-for ((i = 0; i < 5; i++)); do
+for ((i = 0; i < 10; i++)); do
     node ./distribution.js --port $((7090 + i)) &
     node_configs+=("{\"ip\": \"127.0.0.1\", \"port\": $((7090 + i))}")
 done

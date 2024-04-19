@@ -16,35 +16,28 @@
    If no command line argument is provided, the default value is 100k.
 
 2. Start the EC2 instance or local node by running the following command in the terminal:
-   This will start the node and make it available for URL distribution.
+   You can run `./local_crawl_test.sh` to create these child process locally
 
-   ```bash
-   node ./distribution.js --port 7090
-   ```
+   Update the configuration settings to match the IP address and port of the running node in `./nodes.json`. For example:
 
-   You can run `./local_crawl_test.sh` to create these child process
+   Replace `127.0.0.1` with the IP address of the EC2 instance or local node, and `7090` with the port number specified when starting the node.
 
-   Open the loadUrls.js script and locate the configuration section.
-
-   ```javascript
-   const node1 = {
-     ip: '127.0.0.1',
-     port: 7090,
-   };
-   ```
-
-   Update the configuration settings to match the IP address and port of the running node. For example:
-
-   Replace '127.0.0.1' with the IP address of the EC2 instance or local node, and 7090 with the port number specified when starting the node.
-
-   Save the changes to the loadUrls.js script.
-
-   Run the loadUrls.js script to load the URLs into nodes using consistent hashing and sharding:
+   Run the `node ./loadUrls.js` script to load the URLs into nodes using consistent hashing and sharding:
 
    This will distribute the URLs across the nodes based on the configured node's IP address and port.
 
    ```bash
-   node loadUrls.js
+   node ./loadUrls.js
    ```
 
-   This will distribute the URLs across the nodes based on consistent hashing and sharding algorithms.
+3. Use the `getTexts.js` script to scrape the HTML text from the URLs and store the pages in `storeGid` group:
+
+   ```bash
+   node ./getTexts.js
+   ```
+
+   This script will retrieve the HTML content from each URL in the `datasets.txt` file and store the pages in the `storeGid` group directory.
+
+   Note: Make sure that the `datasets.txt` file contains the URLs you want to scrape before running this script.
+
+
