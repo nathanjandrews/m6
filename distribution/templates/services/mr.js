@@ -30,6 +30,7 @@ const mr = (config) => {
       const configuration = {
         ...mrConfig,
         memory: mrConfig.memory || false,
+        compact: !!mrConfig.compact,
       };
 
       // For the setup phase, this coordinator must create a set of dynamic and
@@ -41,7 +42,6 @@ const mr = (config) => {
       // constructing the "local" mr service to be instantiated on all nodes in
       // the group
       const mrServiceName = `mr-${id.getRID()}`;
-      const { compact = true } = configuration
       /**
        * @type {TYPES.LocalMapReduceContext}
        */
@@ -50,11 +50,12 @@ const mr = (config) => {
         serviceName: mrServiceName,
         memory: configuration.memory,
         storeGid: configuration.storeGid || context.gid,
-        compact: compact,
+        compact: configuration.compact,
       };
 
       groupServices.routes.put(localMrService, mrServiceName, (e, v) => {
         if (Object.keys(e).length > 0) {
+          console.error('route instantiation:', e);
           return cb(e);
         }
 
@@ -63,20 +64,23 @@ const mr = (config) => {
         groupServices.comm.send(
             [localMapReduceContext, configuration.keys, configuration.map],
             {service: mrServiceName, method: 'map'},
-            (e) => {
+            (e, v) => {
               if (Object.keys(e).length > 0) {
+                console.error('mr map:', e);
                 return cb(e);
               }
 
               // at this point we know that all of the nodes have completed the
               // map phase. Now we need to shuffle and group the data
               groupServices.comm.send(
-                  [localMapReduceContext, id.consistentHash],
+                  [localMapReduceContext, configuration.keys, id.consistentHash],
                   {service: mrServiceName, method: 'shuffle'},
-                  (e) => {
+                  (e, v) => {
                     if (Object.keys(e).length > 0) {
+                      console.error('mr shuffle & group:', e);
                       return cb(e);
                     }
+
 
                     // at this point we know that all of the nodes have
                     // completed the shuffle and group phases. We now need to
@@ -86,6 +90,7 @@ const mr = (config) => {
                         {service: mrServiceName, method: 'reduce'},
                         (e, v) => {
                           if (Object.keys(e).length > 0) {
+                            console.error('mr reduce:', e);
                             return cb(e);
                           }
 

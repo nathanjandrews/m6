@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "test": "jest --maxWorkers 1",
+    "test": "rm -rf ./store/* && jest --maxWorkers 1",
     "lint": "eslint --ignore-path .gitignore . --fix"
   },
   "author": "",
@@ -25,6 +25,9 @@
     "axios": "^1.6.8",
     "cheerio": "^1.0.0-rc.12",
     "sync-fetch": "^0.5.2",
-    "yargs": "^17.7.2"
+    "yargs": "^17.7.2",
+    "html-to-text": "^9.0.5",
+    "jsdom": "^23.2.0",
+    "natural": "^6.10.4"
   }
 }

@@ -24,10 +24,12 @@ if (args.ip) {
 }
 
 if (args.port) {
+  // @ts-ignore
   global.nodeConfig.port = parseInt(args.port);
 }
 
 if (args.config) {
+  // @ts-ignore
   const nodeConfig = util.deserialize(args.config);
   global.nodeConfig.ip = nodeConfig.ip ? nodeConfig.ip : global.nodeConfig.ip;
   global.nodeConfig.port = nodeConfig.port ? nodeConfig.port : global.nodeConfig.port;
@@ -43,15 +45,15 @@ const distribution = {
 global.distribution = distribution;
 global.require = require;
 global.process = process;
+global.https = require('https'); // added https package to global object for m5
+global.child_process = require('child_process');
+global.natural = require('natural');
 
-distribution['all'] = {};
-distribution['all'].status = require('./distribution/all/status')({ gid: 'all' });
-distribution['all'].comm = require('./distribution/all/comm')({ gid: 'all' });
-distribution['all'].gossip = require('./distribution/all/gossip')({ gid: 'all' });
-distribution['all'].groups = require('./distribution/all/groups')({ gid: 'all' });
-distribution['all'].routes = require('./distribution/all/routes')({ gid: 'all' });
-distribution['all'].mem = require('./distribution/all/mem')({ gid: 'all' });
-distribution['all'].store = require('./distribution/all/store')({ gid: 'all' });
+// registering the "all" group
+const groupsTemplate = require('./distribution/templates/services/groups.js');
+const allGroup = {};
+allGroup[util.id.getSID(global.nodeConfig)] = global.nodeConfig;
+groupsTemplate({gid: 'all'}).put('all', allGroup);
 
 module.exports = global.distribution;
 
