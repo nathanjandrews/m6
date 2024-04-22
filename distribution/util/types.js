@@ -33,6 +33,8 @@
  *  map: MapReduceMapFn<T>
  *  reduce: MapReduceReduceFn<T>
  *  memory?: boolean
+ *  storeGid?: string
+ *  compact?: boolean
  * }} MapReduceConfiguration
  */
 
@@ -41,6 +43,8 @@
  *  gid: string,
  *  serviceName: string,
  *  memory: boolean
+ *  storeGid?: string
+ *  compact?: boolean
  * }} LocalMapReduceContext
  */
 

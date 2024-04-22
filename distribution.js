@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const util = require('./distribution/util/index.js');
+const util = require('./distribution/util/util.js');
 const args = require('yargs').argv;
 
 // Default configuration
@@ -24,38 +24,36 @@ if (args.ip) {
 }
 
 if (args.port) {
-  // @ts-ignore
   global.nodeConfig.port = parseInt(args.port);
 }
 
 if (args.config) {
-  // @ts-ignore
-  const parsedConfig = util.deserialize(args.config);
-
-  global.nodeConfig.ip = parsedConfig.ip ?
-    parsedConfig.ip : global.nodeConfig.ip;
-  global.nodeConfig.port = parsedConfig.port ?
-    parsedConfig.port : global.nodeConfig.port;
-  global.nodeConfig.onStart = parsedConfig.onStart ?
-    parsedConfig.onStart : global.nodeConfig.onStart;
+  const nodeConfig = util.deserialize(args.config);
+  global.nodeConfig.ip = nodeConfig.ip ? nodeConfig.ip : global.nodeConfig.ip;
+  global.nodeConfig.port = nodeConfig.port ? nodeConfig.port : global.nodeConfig.port;
+  global.nodeConfig.onStart = nodeConfig.onStart ? nodeConfig.onStart : global.nodeConfig.onStart;
 }
 
 const distribution = {
-  util: require('./distribution/util'),
-  local: require('./distribution/local/index.js'),
+  util: require('./distribution/util/util.js'),
+  local: require('./distribution/local/local.js'),
   node: require('./distribution/local/node.js'),
 };
 
 global.distribution = distribution;
-global.https = require('https'); // added https package to global object for m5
+global.require = require;
+global.process = process;
 
-// registering the "all" group
-const groupsTemplate = require('./distribution/templates/services/groups.js');
-const allGroup = {};
-allGroup[util.id.getSID(global.nodeConfig)] = global.nodeConfig;
-groupsTemplate({gid: 'all'}).put('all', allGroup);
+distribution['all'] = {};
+distribution['all'].status = require('./distribution/all/status')({ gid: 'all' });
+distribution['all'].comm = require('./distribution/all/comm')({ gid: 'all' });
+distribution['all'].gossip = require('./distribution/all/gossip')({ gid: 'all' });
+distribution['all'].groups = require('./distribution/all/groups')({ gid: 'all' });
+distribution['all'].routes = require('./distribution/all/routes')({ gid: 'all' });
+distribution['all'].mem = require('./distribution/all/mem')({ gid: 'all' });
+distribution['all'].store = require('./distribution/all/store')({ gid: 'all' });
 
-module.exports = distribution;
+module.exports = global.distribution;
 
 /* The following code is run when distribution.js is run directly */
 if (require.main === module) {
