@@ -52,7 +52,7 @@ mr.map = async (context, keys, mapFn, callback) => {
   memStore.put(
       mapResults.flat(),
       {gid: context.gid, key: mr.storageKey},
-      () => cb(null, true));
+      () => cb(null, mapResults.flat()));
 };
 
 /**
@@ -68,16 +68,45 @@ mr.shuffle = (context, hash, callback) => {
 
   const key = global.routesServiceStore[context.serviceName].storageKey;
   memStore.get({gid: context.gid, key}, async (e, v) => {
-    /** @type {any[]} */
-    const mappedValues = v;
+    /**
+     * These are the results of calling the map function on data sent to this
+     * node during the map phase
+     * @type {any[]} */
+    const mapResults = v;
 
-    // checking to make sure ALL mapped values have the correct shape
-    for (const value of mappedValues) {
-      if (Object.entries(value).length !== 1) {
-        cb(new Error(`expected objects with one entry but instead got an object
-          with ${Object.entries(value).length} entries:
-          ${global.distribution.util.serialize(value)}`));
-        return;
+    const objectsToShuffle = [];
+    for (const value of mapResults) {
+      for (const [k, v] of Object.entries(value)) {
+        objectsToShuffle.push({key: k, value: v});
+      }
+    }
+
+    // get all the nodes from which we select receivers
+    const nodes = global.groupsServiceMapping.get(context.gid);
+    if (!nodes) {
+      cb(new Error(`node ${JSON.stringify(global.nodeConfig)} does not
+          have a memory store for group "${context.gid}"`));
+      return;
+    }
+    const nids = Object.values(nodes).map((n) =>
+      (global.distribution.util.id.getNID(n)));
+
+    // combine all of the data that is meant to be sent to each node to reduce
+    // the number of HTTP messages sent over the network. This change was made
+    // in attempt to stop ECONNRESET error which are hypothesized to occur due
+    // to heavy network traffic
+    const nodesReceivers = new Map();
+    for (const {key, value} of objectsToShuffle) {
+      const selectedSid = hash(key, nids).substring(0, 5);
+      const node = nodes[selectedSid];
+      const receiver = nodesReceivers.get(selectedSid);
+      if (receiver) {
+        receiver.kvPairs.push({key, value});
+      } else {
+        nodesReceivers.set(selectedSid, {
+          node,
+          kvPairs: [{key, value}],
+        });
       }
     }
 
@@ -86,30 +115,16 @@ mr.shuffle = (context, hash, callback) => {
     // grouping node will then send a response once it has successfully ran
     // its group() service on the received data.
     const groupPhasePromises =
-      mappedValues.map((mappedValue) => new Promise((resolve, reject) => {
-        const key = Object.keys(mappedValue)[0];
-        const value = Object.values(mappedValue)[0];
-
-        const nodes = global.groupsServiceMapping.get(context.gid);
-        if (!nodes) {
-          reject(new Error(`node ${JSON.stringify(global.nodeConfig)} does not
-          have a memory store for group "${context.gid}"`));
-          return;
-        }
-
-        // determine the grouping node via hashing
-        const nids = Object.values(nodes).map((n) =>
-          (global.distribution.util.id.getNID(n)));
-        const selectedNid = hash(key, nids);
-        const node = nodes[selectedNid.substring(0, 5)];
-
-        const message = [context, key, value];
+      [...nodesReceivers.values()].map(({node, kvPairs}) => new Promise((resolve, reject) => {
         const remote = {
           node,
           service: context.serviceName,
           method: 'group',
         };
-
+        const message = [
+          context,
+          kvPairs,
+        ];
         global.distribution.local.comm.send(message, remote, (e, v) => {
           if (e) {
             reject(e);
@@ -132,11 +147,10 @@ mr.shuffle = (context, hash, callback) => {
  * This function receives values with identical keys from shuffle() and groups
  * those values for the reduce phase.
  * @param {LocalMapReduceContext} context
- * @param {string} key
- * @param {any} value
+ * @param {{key: string, value: any}[]} kvPairs
  * @param {ServiceCallback} [callback]
  */
-mr.group = (context, key, value, callback) => {
+mr.group = (context, kvPairs, callback) => {
   const cb = callback || function() {};
   const mr = global.routesServiceStore[context.serviceName];
 
@@ -145,12 +159,14 @@ mr.group = (context, key, value, callback) => {
     mr.reduceState.values = {};
   }
 
-  if (!mr.reduceState.values[key]) {
-    mr.reduceState.values[key] = [];
-  }
+  for (const {key, value} of kvPairs) {
+    if (!mr.reduceState.values[key]) {
+      mr.reduceState.values[key] = [];
+    }
 
-  const valuesToReduce = mr.reduceState.values[key];
-  valuesToReduce.push(value);
+    const valuesToReduce = mr.reduceState.values[key];
+    valuesToReduce.push(value);
+  }
 
   cb(null, true);
 };

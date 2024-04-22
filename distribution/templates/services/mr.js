@@ -49,6 +49,7 @@ const mr = (config) => {
 
       groupServices.routes.put(localMrService, mrServiceName, (e, v) => {
         if (Object.keys(e).length > 0) {
+          console.error('route instantiation:', e);
           return cb(e);
         }
 
@@ -57,8 +58,9 @@ const mr = (config) => {
         groupServices.comm.send(
             [localMapReduceContext, configuration.keys, configuration.map],
             {service: mrServiceName, method: 'map'},
-            (e) => {
+            (e, v) => {
               if (Object.keys(e).length > 0) {
+                console.error('mr map:', e);
                 return cb(e);
               }
 
@@ -67,8 +69,9 @@ const mr = (config) => {
               groupServices.comm.send(
                   [localMapReduceContext, id.consistentHash],
                   {service: mrServiceName, method: 'shuffle'},
-                  (e) => {
+                  (e, v) => {
                     if (Object.keys(e).length > 0) {
+                      console.error('mr shuffle & group:', e);
                       return cb(e);
                     }
 
@@ -80,6 +83,7 @@ const mr = (config) => {
                         {service: mrServiceName, method: 'reduce'},
                         (e, v) => {
                           if (Object.keys(e).length > 0) {
+                            console.error('mr reduce:', e);
                             return cb(e);
                           }
 
