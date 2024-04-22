@@ -3,7 +3,7 @@ const distribution = require('../distribution');
 const id = distribution.util.id;
 
 const groupsTemplate = require('../distribution/all/groups');
-const dependencies = require('../distribution/workflows/indexing/indexing');
+const {indexingMap, indexingReduce} = require('../distribution/workflows/indexing/indexing');
 
 const group = {};
 
@@ -70,9 +70,8 @@ afterAll((done) => {
 // ---all.mr---
 
 test('testing indexing workflow', (done) => {
-  const m1 = dependencies.indexingMap;
-  const r1 = dependencies.indexingReduce;
-  const d = dependencies;
+  const map = indexingMap;
+  const reduce = indexingReduce;
 
 
   let dataset = [
@@ -132,12 +131,10 @@ test('testing indexing workflow', (done) => {
         done(e);
       }
 
-      distribution.group.mr.exec({keys: v, map: m1, reduce: r1, dependencies: d}, (e, v) => {
+      distribution.group.mr.exec({keys: v, map, reduce, compact: true}, (e, v) => {
         try {
-          // expect(v).toEqual(expect.arrayContaining(expected));
-          console.log(v);
+          expect(e).toBe(null);
           expect(v).toEqual(expect.arrayContaining(expected));
-          // expect(v).toEqual(expect.arrayContaining([]));
           done();
         } catch (e) {
           done(e);
