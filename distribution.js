@@ -48,6 +48,8 @@ const distribution = {
 
 global.distribution = distribution;
 global.https = require('https'); // added https package to global object for m5
+global.child_process = require('child_process');
+global.natural = require('natural');
 
 // registering the "all" group
 const groupsTemplate = require('./distribution/templates/services/groups.js');
