@@ -41,10 +41,16 @@ const mr = (config) => {
       // constructing the "local" mr service to be instantiated on all nodes in
       // the group
       const mrServiceName = `mr-${id.getRID()}`;
+      const {compact = true} = configuration;
+      /**
+       * @type {TYPES.LocalMapReduceContext}
+       */
       const localMapReduceContext = {
         gid: context.gid,
         serviceName: mrServiceName,
         memory: configuration.memory,
+        storeGid: configuration.storeGid || context.gid,
+        compact: compact,
       };
 
       groupServices.routes.put(localMrService, mrServiceName, (e, v) => {
