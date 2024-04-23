@@ -9,3 +9,10 @@ done
 node_configs_string=${node_configs_string%, }
 
 echo "[$node_configs_string]" > ./crawler/ec2-nodes.json
+
+ssh_commands=""
+for ip in $ip_addresses; do
+    ip_with_dash=$(echo $ip | tr '.' '-')
+    ssh_commands+="ssh -i \"~/Apr15.pem\" ec2-user@ec-${ip_with_dash}.us-east-2.compute.amazonaws.com \"cd ./m6 && ./start.sh\"\n"
+done
+echo -e "$ssh_commands" > ./crawler/ec2-ssh.sh

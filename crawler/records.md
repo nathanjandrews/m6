@@ -59,5 +59,16 @@ count of urls: 10140
 procedure time: FATAL ERROR: Reached heap limit Allocation failed
 
 ### 10 Nodes 1000 Urls
+[loader] 
+count of nodes: 10 
+count of urls: 1064 
+procedure time: 7138.1299 milliseconds
+[scraper] 
+count of nodes: 10 
+count of urls: 1064 
+procedure time: 64738.8516 milliseconds
+
 ### 10 Nodes 10000 Urls
+
+
 ### 10 Nodes 100000 Urls
