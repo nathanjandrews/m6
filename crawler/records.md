@@ -24,4 +24,12 @@ count of urls: 1064
 procedure time: 108797.2259 milliseconds
 
 ### 5 Nodes
-
+#### 1000 Urls
+[loader] 
+count of nodes: 5 
+count of urls: 1064 
+procedure time: 2355.2173 milliseconds
+[scraper] 
+count of nodes: 5 
+count of urls: 1064 
+procedure time: 65297.7338 milliseconds
