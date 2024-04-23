@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ip_addresses=$(aws ec2 describe-instances --query 'Reservations[*].Instances[*].PrivateIpAddress' --output text)
+ip_addresses=$(aws ec2 describe-instances --filters "Name=instance-state-name,Values=running" --query 'Reservations[*].Instances[*].PublicIpAddress' --output text)
 
 node_configs_string=""
 for ip in $ip_addresses; do

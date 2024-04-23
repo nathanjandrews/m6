@@ -3,10 +3,11 @@ const distribution = require('../distribution');
 const id = distribution.util.id;
 const groups = require('../distribution/all/groups');
 const TYPES = require('../distribution/util/types.js');
-
-// TODO: find a way to auto config the ip from ec2
-const nodes = require('./nodes.json');
 const { performance } = require('perf_hooks');
+
+const args = process.argv.slice(2);
+const nodesPath = args.includes('dev') ? './ec2-nodes.json' : './nodes.json';
+const nodes = require(nodesPath);
 
 const crawlerGroup = {};
 for (const node of nodes) {

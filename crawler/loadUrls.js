@@ -11,8 +11,9 @@ const distribution = require('../distribution');
 const id = distribution.util.id;
 const groups = require('../distribution/all/groups');
 
-// TODO: find a way to auto config the ip from ec2
-const nodes = require('./nodes.json');
+const args = process.argv.slice(2);
+const nodesPath = args.includes('dev') ? './ec2-nodes.json' : './nodes.json';
+const nodes = require(nodesPath);
 
 const crawlerGroup = {};
 for (const node of nodes) {
