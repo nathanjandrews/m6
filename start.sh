@@ -6,4 +6,8 @@ then
     exit 1
 fi
 
+npm i
+
+rm -rf ./store/*
+
 node ./distribution.js --ip 0.0.0.0 --port 8080
