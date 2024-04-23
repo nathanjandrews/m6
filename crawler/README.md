@@ -16,7 +16,8 @@
    If no command line argument is provided, the default value is 100k.
 
 2. Start the EC2 instance or local node by running the following command in the terminal:
-   You can run `./local_crawl_test.sh` to create these child process locally
+   You can run `./local_crawl_test.sh` to create these child process locally,
+   Or you can run `./ec2_crawl_test.sh` to get all the ec2 instances from your aws cli
 
    Update the configuration settings to match the IP address and port of the running node in `./nodes.json`. For example:
 
@@ -27,13 +28,13 @@
    This will distribute the URLs across the nodes based on the configured node's IP address and port.
 
    ```bash
-   node ./loadUrls.js
+   node ./loadUrls.js --env local --urls 100
    ```
 
 3. Use the `getTexts.js` script to scrape the HTML text from the URLs and store the pages in `storeGid` group:
 
    ```bash
-   node ./getTexts.js
+   node ./getTexts.js --env local
    ```
 
    This script will retrieve the HTML content from each URL in the `datasets.txt` file and store the pages in the `storeGid` group directory.

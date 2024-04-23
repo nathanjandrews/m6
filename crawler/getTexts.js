@@ -5,8 +5,8 @@ const groups = require('../distribution/all/groups');
 const TYPES = require('../distribution/util/types.js');
 const { performance } = require('perf_hooks');
 
-const args = process.argv.slice(2);
-const nodesPath = args.includes('dev') ? './ec2-nodes.json' : './nodes.json';
+const args = require('yargs').argv;
+const nodesPath = args.env === 'dev' ? './ec2-nodes.json' : './nodes.json';
 const nodes = require(nodesPath);
 
 const crawlerGroup = {};

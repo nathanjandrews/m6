@@ -1,19 +1,21 @@
 const fs = require('fs');
 const path = require('path');
-const urlPath = path.join(__dirname, 'datasets.txt');
+const args = require('yargs').argv;
 const { performance } = require('perf_hooks');
 
-const data = fs.readFileSync(urlPath, 'utf8');
-const dataset = data.split('\n');
 
 global.nodeConfig = { ip: '127.0.0.1', port: 8080 };
 const distribution = require('../distribution');
 const id = distribution.util.id;
 const groups = require('../distribution/all/groups');
 
-const args = process.argv.slice(2);
-const nodesPath = args.includes('dev') ? './ec2-nodes.json' : './nodes.json';
+const nodesPath = args.env === 'dev' ? './ec2-nodes.json' : './nodes.json';
 const nodes = require(nodesPath);
+
+const datasetsUrl = `datasets-${args.urls}.txt`;
+const urlPath = path.join(__dirname, datasetsUrl);
+const data = fs.readFileSync(urlPath, 'utf8');
+const dataset = data.split('\n');
 
 const crawlerGroup = {};
 for (const node of nodes) {

@@ -10,7 +10,7 @@ const path = require('path');
  * For example, to set MAX_URLS to 2000, run: `node getUrls.js 2000`
  * If no command line argument is provided, the default value is 100k.
  */
-const MAX_URLS = process.argv[2] || 100 * 1000;
+const MAX_URLS = process.argv[2] || 200 * 1000;
 const startingUrl = 'https://atlas.cs.brown.edu/data/gutenberg/';
 const visitedUrls = new Set();
 const datasetsUrl = `datasets-${MAX_URLS/2}.txt`;
