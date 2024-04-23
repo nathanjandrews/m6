@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const urlPath = path.join(__dirname, 'datasets.txt');
+const { performance } = require('perf_hooks');
 
 const data = fs.readFileSync(urlPath, 'utf8');
 const dataset = data.split('\n');
@@ -33,14 +34,24 @@ groups(groupConfig).put(groupConfig, crawlerGroup, (e, v) => {
 
 const loadUrls = () => {
   let cntr = 0;
-
-
+  const startTime = performance.now();
   // We send the dataset to the cluster
   dataset.forEach((url) => {
     distribution.crawler.store.put(url, url, (e, v) => {
       cntr++;
       // Once we are done, run the map reduce
       if (cntr === dataset.length) {
+        const endTime = performance.now();
+        const procedureTime = endTime - startTime;
+        console.log(
+          '[loader] \ncount of nodes:',
+          Object.keys(crawlerGroup).length,
+          '\ncount of urls:',
+          dataset.length,
+          '\nprocedure time:',
+          procedureTime.toFixed(4),
+          'milliseconds',
+        );
         graceShutDown();
       }
     });

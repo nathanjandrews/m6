@@ -24,7 +24,7 @@ async function crawl(url) {
   }
 
   try {
-    const response = await axios.get(url, {httpsAgent: agent});
+    const response = await axios.get(url, { httpsAgent: agent });
     const $ = cheerio.load(response.data);
     const curUrls = [];
     visitedUrls.add(url);

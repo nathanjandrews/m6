@@ -6,6 +6,7 @@ const TYPES = require('../distribution/util/types.js');
 
 // TODO: find a way to auto config the ip from ec2
 const nodes = require('./nodes.json');
+const { performance } = require('perf_hooks');
 
 const crawlerGroup = {};
 for (const node of nodes) {
@@ -38,6 +39,7 @@ const crawlerWorkflow = () => {
   };
 
   const doMapReduce = (cb) => {
+    const startTime = performance.now();
     distribution.crawler.store.get(null, (e, v) => {
       /**
        * @type {TYPES.MapReduceConfiguration}
@@ -47,11 +49,21 @@ const crawlerWorkflow = () => {
         map: m1,
         reduce: r1,
         storeGid: 'scraper',
-        compact: false,  // split the content
+        compact: false, // split the content
       };
       distribution.crawler.mr.exec(config, (e, v) => {
         try {
-          // console.log('[crawler]:', v);
+          const endTime = performance.now();
+          const procedureTime = endTime - startTime;
+          console.log(
+            '[scraper] \ncount of nodes:',
+            Object.keys(crawlerGroup).length,
+            '\ncount of urls:',
+            config.keys.length,
+            '\nprocedure time:',
+            procedureTime.toFixed(4),
+            'milliseconds',
+          );
           graceShutDown();
         } catch (e) {
           console.error('[crawler error]:', e);
