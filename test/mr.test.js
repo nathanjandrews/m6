@@ -134,7 +134,7 @@ test('(25 pts) all.mr:ncdc', (done) => {
       }
 
 
-      distribution.ncdc.mr.exec({keys: v, map: m1, reduce: r1}, (e, v) => {
+      distribution.ncdc.mr.exec({keys: v, map: m1, reduce: r1, compact: true}, (e, v) => {
         try {
           expect(v).toEqual(expect.arrayContaining(expected));
           done();
@@ -214,7 +214,7 @@ test('(25 pts) all.mr:dlib', (done) => {
         done(e);
       }
 
-      distribution.dlib.mr.exec({keys: v, map: m2, reduce: r2}, (e, v) => {
+      distribution.dlib.mr.exec({keys: v, map: m2, reduce: r2, compact: true}, (e, v) => {
         try {
           expect(v).toEqual(expect.arrayContaining(expected));
           done();

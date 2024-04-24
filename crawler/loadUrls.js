@@ -3,7 +3,6 @@ const path = require('path');
 const args = require('yargs').argv;
 const { performance } = require('perf_hooks');
 
-
 global.nodeConfig = { ip: '127.0.0.1', port: 8080 };
 const distribution = require('../distribution');
 const id = distribution.util.id;
@@ -12,7 +11,8 @@ const groups = require('../distribution/all/groups');
 const nodesPath = args.env === 'dev' ? './ec2-nodes.json' : './nodes.json';
 const nodes = require(nodesPath);
 
-const datasetsUrl = `datasets-${args.urls}.txt`;
+const urlsCnt = args.urls || 1000;
+const datasetsUrl = `datasets-${urlsCnt}.txt`;
 const urlPath = path.join(__dirname, datasetsUrl);
 const data = fs.readFileSync(urlPath, 'utf8');
 const dataset = data.split('\n');

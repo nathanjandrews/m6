@@ -52,7 +52,8 @@ const store = (config) => {
 
     /**
      * Store GET method template
-     * @param {string | null} nullableKey
+     * @param {string | Object | null} nullableKey
+     * @param {nullableKey.gid} nullableKey.gid
      * @param {ServiceCallback} [callback]
      */
     get: (nullableKey, callback) => {
@@ -75,6 +76,22 @@ const store = (config) => {
             cb({}, accKeys);
           });
           return;
+        }
+
+        // ! only for Search Engine
+        if (typeof nullableKey === 'object') {
+          if ('gid' in nullableKey) {
+            const message = [{gid: nullableKey.gid, key: null}];
+            const remote = {service: 'store', method: 'get'};
+            groupServices.comm.send(message, remote, (e, v) => {
+              const accKeys = [];
+              for (const keys of Object.values(v)) {
+                accKeys.push(...keys);
+              }
+              cb({}, accKeys);
+            });
+            return;
+          }
         }
 
         const nids = Object.keys(v);

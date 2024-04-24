@@ -50,6 +50,7 @@ const mr = (config) => {
         serviceName: mrServiceName,
         memory: configuration.memory,
         storeGid: configuration.storeGid || context.gid,
+        loadGid: configuration.loadGid || context.gid,
         compact: configuration.compact,
       };
 
@@ -80,7 +81,6 @@ const mr = (config) => {
                       console.error('mr shuffle & group:', e);
                       return cb(e);
                     }
-
 
                     // at this point we know that all of the nodes have
                     // completed the shuffle and group phases. We now need to
