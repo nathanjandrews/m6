@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "rm -rf ./store/* && jest --maxWorkers 1",
-    "lint": "eslint --ignore-path .gitignore . --fix"
+    "lint": "eslint --ignore-path .gitignore . --fix",
+    "benchmark": "rm -rf ./store/* && node"
   },
   "author": "",
   "license": "ISC",
