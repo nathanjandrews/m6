@@ -25,14 +25,14 @@ for (const node of nodes) {
 const groupConfig = { gid: 'crawler', hash: id.consistentHash };
 groups(groupConfig).put(groupConfig, crawlerGroup, (e, v) => {
   let cnt = 0;
-  for (const node of nodes) {
-    distribution.crawler.groups.add('crawler', node, (e, v) => {
-      cnt++;
-      if (cnt === nodes.length) {
+  // for (const node of nodes) {
+    // distribution.crawler.groups.add('crawler', node, (e, v) => {
+      // cnt++;
+      // if (cnt === nodes.length) {
         loadUrls();
-      }
-    });
-  }
+  //     }
+  //   });
+  // }
 });
 
 const loadUrls = () => {
