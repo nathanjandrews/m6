@@ -25,7 +25,8 @@
     "axios": "^1.6.8",
     "html-to-text": "^9.0.5",
     "jsdom": "^23.2.0",
-    "natural": "^6.10.4",
+    "natural": "^6.12.0",
+    "stopword": "^3.0.1",
     "sync-fetch": "^0.5.2",
     "yargs": "^17.7.2"
   }
