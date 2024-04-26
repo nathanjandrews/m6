@@ -33,7 +33,8 @@
  *  map: MapReduceMapFn<T>
  *  reduce: MapReduceReduceFn<T>
  *  memory?: boolean
- *  storeGid?: string
+ *  loadGid?: string - load files from a different gid
+ *  storeGid?: string - store files to a different gid
  *  compact?: boolean
  * }} MapReduceConfiguration
  */
@@ -43,7 +44,8 @@
  *  gid: string,
  *  serviceName: string,
  *  memory: boolean
- *  storeGid?: string
+ *  loadGid?: string - load files from a different gid
+ *  storeGid?: string - store files to a different gid
  *  compact?: boolean
  * }} LocalMapReduceContext
  */

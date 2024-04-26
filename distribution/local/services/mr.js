@@ -30,7 +30,7 @@ mr.map = async (context, keys, mapFn, callback) => {
 
   // each promise in this array will
   const mapPromises = keys.map((key) => new Promise((resolve, reject) => {
-    memStore.get({gid: context.gid, key}, (e, v) => {
+    memStore.get({gid: context.loadGid, key}, (e, v) => {
       if (e) {
         reject(e);
       } else {
