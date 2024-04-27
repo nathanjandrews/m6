@@ -31,7 +31,7 @@ const crawlerWorkflow = () => {
       headers: { 'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html' },
     });
     const obj = {};
-    obj[value] = res.text();
+    obj[value] = res.text().slice(0, 100);
     return obj;
   };
 
