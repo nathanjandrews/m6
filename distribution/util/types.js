@@ -38,6 +38,7 @@
  *  compact?: boolean
  *  cleanup?: boolean
  *  noShuffle?: boolean
+ *  reduceStore?: boolean
  * }} MapReduceConfiguration
  */
 
@@ -51,6 +52,7 @@
  *  compact?: boolean
  *  cleanup?: boolean
  *  noShuffle?: boolean
+ *  reduceStore?: boolean
  * }} LocalMapReduceContext
  */
 

@@ -53,6 +53,7 @@ const mr = (config) => {
         loadGid: configuration.loadGid || context.gid,
         compact: configuration.compact,
         noShuffle: configuration.noShuffle || false,
+        reduceStore: configuration.reduceStore || false,
       };
 
       groupServices.routes.put(localMrService, mrServiceName, (e, v) => {

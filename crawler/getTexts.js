@@ -7,6 +7,8 @@ const { performance } = require('perf_hooks');
 
 const args = require('yargs').argv;
 const nodesPath = args.env === 'dev' ? './ec2-nodes.json' : './nodes.json';
+const meta = args.meta === 'true' ? true : false;
+
 const nodes = require(nodesPath);
 
 const crawlerGroup = {};
@@ -22,34 +24,58 @@ groups(crawlerConfig).put(crawlerConfig, crawlerGroup, (e, v) => {
   });
 });
 
+const m1 = (key, value) => {
+  const fetch = global.require('sync-fetch');
+  const JSDOM = global.require('jsdom').JSDOM;
+  global.process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
+  console.log('[key]', key, value);
+  const res = fetch(value, {
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html' },
+  });
+  const obj = {};
+  obj[value] = {};
+
+  const ebookId = value.split('/').at(-2);
+  const baseUrl = 'https://www.gutenberg.org/ebooks';
+  console.log('URL:', `${baseUrl}/${ebookId}`);
+  const metadata = fetch(`${baseUrl}/${ebookId}`, {
+    headers: { 'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html' },
+  });
+  const dom = new JSDOM(metadata.text());
+  const titleElement = dom.window.document.querySelector('h1[itemprop="name"]');
+  const authorElement = dom.window.document.querySelector('a[itemprop="creator"]');
+  const coverElement = dom.window.document.querySelector('image[itemprop="image"]');
+  const dateElement = dom.window.document.querySelector('td[itemprop="datePublished"]');
+  const title = titleElement ? titleElement.textContent.trim() : '';
+  const author = authorElement ? authorElement.textContent.trim() : '';
+  const cover = coverElement ? coverElement.src : '';
+  const date = dateElement ? dateElement.textContent.trim() : '';
+  obj[value] ={
+    html: res.text(),
+    title: title,
+    author: author,
+    cover: cover,
+    date:  date,
+  }
+  return obj;
+};
+
+const r1 = (key, values) => {
+  return values;
+};
+
 const crawlerWorkflow = () => {
-  const m1 = (key, value) => {
-    const fetch = global.require('sync-fetch');
-    global.process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-
-    const res = fetch(value, {
-      headers: { 'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html' },
-    });
-    const obj = {};
-    // obj[value] = res.text();
-    obj[value] = "apple banana";
-    return obj;
-  };
-
-  const r1 = (key, values) => {
-    return values;
-  };
-
   const doMapReduce = (cb) => {
     const startTime = performance.now();
     distribution.crawler.store.get(null, (e, v) => {
       /**
-       * @type {TYPES.MapReduceConfiguration}
+       * @type {TYPES.MapReduceConfiguration<object>}
        */
       const config = {
         keys: v,
         map: m1,
         reduce: r1,
+        loadGid: 'crawler',
         storeGid: 'scraper',
         compact: false, // split the content
         noShuffle: true,

@@ -25,7 +25,7 @@ groups(crawlerConfig).put(crawlerConfig, indexerGroup, (e, v) => {
 const m1 = (key, value) => {
   const natural = global.require('natural');
   const stopwords = global.require('stopword');
-  const content = Object.values(value)[0];
+  const content = Object.values(value)[0].html;
 
   const tokenizer = new natural.WordTokenizer();
   const tokens = tokenizer.tokenize(content);
@@ -49,24 +49,22 @@ const r1 = (key, values) => {
     }
   });
   const out = Object.entries(unique).map(([k, v]) => `${k} ${v}`);
-  return out;
+  return { [key]: out.join(' ') };
 };
 
 const crawlerWorkflow = () => {
   const doMapReduce = () => {
     const startTime = performance.now();
     distribution.crawler.store.get(null, (e, v) => {
-      /**
-       * @type {TYPES.MapReduceConfiguration}
-       */
+      /** @type {TYPES.MapReduceConfiguration< [x: number]: string>} */
       const config = {
         keys: v,
         map: m1,
         reduce: r1,
         loadGid: 'scraper',
         storeGid: 'indexer',
-        compact: false, // split the content
-        noShuffle: true,
+        compact: true,
+        reduceStore: true,
       };
       distribution.indexer.mr.exec(config, (e, v) => {
         try {
@@ -95,6 +93,5 @@ const crawlerWorkflow = () => {
 const graceShutDown = () => {
   setTimeout(() => {
     process.exit(0);
-  }, 1000)
+  }, 1000);
 };
-

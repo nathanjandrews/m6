@@ -135,6 +135,36 @@ const store = (config) => {
     },
 
     /**
+     * Merge method, only for MR search engine
+     * @param {any} value 
+     * @param {string} nullableKey 
+     * @param {ServiceCallback} callback 
+     */
+    merge: (value, nullableKey, callback) => {
+      const cb = callback || function() {};
+      const groupServices = global.distribution[context.gid];
+      groupServices.groups.get(context.gid, (e, v) => {
+        if (e && Object.keys(e).length > 0) {
+          cb(e);
+          return;
+        }
+
+        const realKey = nullableKey === null ? id.getID(value) : nullableKey;
+
+        const nids = Object.keys(v);
+        const kid = id.getID(realKey);
+
+        const selectedNid = context.hash(kid, nids);
+        const node = v[selectedNid][selectedNid];
+
+        const message = [value, {gid: context.gid, key: realKey}];
+        const remote = {node, service: 'store', method: 'merge'};
+
+        global.distribution.local.comm.send(message, remote, cb);
+      });
+    },
+
+    /**
      * Store RECONF method
      * @param {Object} group - old group and its nodes
      * @param {Object} group.sid
