@@ -52,6 +52,7 @@ const mr = (config) => {
         storeGid: configuration.storeGid || context.gid,
         loadGid: configuration.loadGid || context.gid,
         compact: configuration.compact,
+        noShuffle: configuration.noShuffle || false,
       };
 
       groupServices.routes.put(localMrService, mrServiceName, (e, v) => {
@@ -70,6 +71,9 @@ const mr = (config) => {
                 console.error('mr map:', e);
                 return cb(e);
               }
+              if (configuration.noShuffle) {
+                return cb(null, v);
+              }
 
               // at this point we know that all of the nodes have completed the
               // map phase. Now we need to shuffle and group the data
@@ -78,32 +82,40 @@ const mr = (config) => {
                   {service: mrServiceName, method: 'shuffle'},
                   (e, v) => {
                     if (Object.keys(e).length > 0) {
-                      console.error('mr shuffle & group:', e);
-                      return cb(e);
+                      if (Object.values(e)[0].message.includes('not yet supported')) {
+                        return cb(null);
+                      } else {
+                        console.error('mr shuffle & group:', e);
+                        return cb(e);
+                      }
                     }
 
                     // at this point we know that all of the nodes have
                     // completed the shuffle and group phases. We now need to
                     // reduce the data.
                     groupServices.comm.send(
-                        [localMapReduceContext, configuration.reduce],
-                        {service: mrServiceName, method: 'reduce'},
-                        (e, v) => {
-                          if (Object.keys(e).length > 0) {
-                            console.error('mr reduce:', e);
-                            return cb(e);
-                          }
+                      [localMapReduceContext, configuration.reduce],
+                      { service: mrServiceName, method: 'reduce' },
+                      (e, v) => {
+                        if (Object.keys(e).length > 0) {
+                          console.error('mr reduce:', e);
+                          return cb(e);
+                        }
 
-                          // transform the reduced values to the proper form
-                          const reductions = Object.values(v).flat();
+                        // transform the reduced values to the proper form
+                        const reductions = Object.values(v).flat();
 
-                          // clean up the "local" Map-Reduce service
+                        // clean up the "local" Map-Reduce service
+                        if (configuration.cleanup) {
                           groupServices.comm.send(
-                              [localMapReduceContext],
-                              {service: mrServiceName, method: 'cleanup'},
-                              () => cb(null, reductions),
+                            [localMapReduceContext],
+                            { service: mrServiceName, method: 'cleanup' },
+                            () => cb(null, reductions),
                           );
-                        },
+                        } else {
+                          cb(null, reductions);
+                        }
+                      },
                     );
                   },
               );

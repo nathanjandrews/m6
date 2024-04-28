@@ -31,7 +31,8 @@ const crawlerWorkflow = () => {
       headers: { 'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html' },
     });
     const obj = {};
-    obj[value] = res.text().slice(0, 100);
+    // obj[value] = res.text();
+    obj[value] = "apple banana";
     return obj;
   };
 
@@ -51,6 +52,7 @@ const crawlerWorkflow = () => {
         reduce: r1,
         storeGid: 'scraper',
         compact: false, // split the content
+        noShuffle: true,
       };
       distribution.crawler.mr.exec(config, (e, v) => {
         try {

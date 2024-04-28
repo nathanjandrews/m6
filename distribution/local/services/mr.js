@@ -29,15 +29,19 @@ mr.map = async (context, keys, mapFn, callback) => {
   const memStore = global.distribution.local[context.memory ? 'mem' : 'store'];
 
   // each promise in this array will
-  const mapPromises = keys.map((key) => new Promise((resolve, reject) => {
-    memStore.get({gid: context.loadGid, key}, (e, v) => {
-      if (e) {
-        reject(e);
-      } else {
-        resolve(mapFn(key, v));
-      }
-    });
-  }));
+  const mapPromises = keys.map(
+    (key) =>
+      new Promise((resolve, reject) => {
+        memStore.get({ gid: context.loadGid, key }, (e, v) => {
+          if (e) {
+            reject(e);
+          } else {
+            const res = mapFn(key, v);
+            resolve({[key]: res});
+          }
+        });
+      }),
+  );
 
   const settledMapPromises = await Promise.allSettled(mapPromises);
   const mapResults = [];
@@ -47,6 +51,8 @@ mr.map = async (context, keys, mapFn, callback) => {
     }
   }
 
+  // console.log('[mapper tasks count]: ', mapResults.length, mapResults);
+
   const mr = global.routesServiceStore[context.serviceName];
   if (context.compact) {
     mr.storageKey = keys.join('~');
@@ -55,10 +61,15 @@ mr.map = async (context, keys, mapFn, callback) => {
     );
   } else {
     mr.storageKey = keys;
-    mapResults.map((res, i) => {
-      memStore.put(res, {gid: context.storeGid, key: keys[i]}, (e, v) => {});
+    let cnt = 0;
+    mapResults.map((res) => {
+      memStore.put(res, {gid: context.storeGid, key: Object.keys(res)[0]}, (e, v) => {
+        cnt++;
+        if (cnt === mapResults.length) {
+          cb(null, true);
+        }
+      });
     });
-    cb(null, true);
   }
 };
 
@@ -74,9 +85,8 @@ mr.shuffle = async (context, keys, hash, callback) => {
   const cb = callback || function() {};
   const memStore = global.distribution.local[context.memory ? 'mem' : 'store'];
 
-
   // TODO: handle non-compat data retrieval in the shuffle phase
-  if (!context.compact) {
+  if (context.noShuffle) {
     cb(new Error('compact not yet supported in shuffle phase'));
     return;
   }
@@ -87,15 +97,28 @@ mr.shuffle = async (context, keys, hash, callback) => {
    * node during the map phase
    * @type {any[]} */
   const mapResults = await new Promise((resolve, reject) => {
-    memStore.get({gid: context.storeGid, key}, (e, v) => {
-      if (e) {
-        reject(e);
-      } else {
-        resolve(v);
-      }
-    });
-  }); ;
+    if (Array.isArray(key)) {
+      key.map((k) => {
+        memStore.get({gid: context.storeGid, key: k}, (e, v) => {
+          if (e) {
+            reject(e);
+          } else {
+            resolve(v);
+          }
+        });
+      })
+    } else {
+      memStore.get({gid: context.loadGid, key}, (e, v) => {
+        if (e) {
+          reject(e);
+        } else {
+          resolve(v);
+        }
+      });
+    }
+  });
 
+  console.log('mapResults:', mapResults);
   // we transform the mapped data into key value pairs, each of which can be
   // sent to a different node for grouping
   const objectsToShuffle = [];

@@ -36,6 +36,8 @@
  *  loadGid?: string
  *  storeGid?: string
  *  compact?: boolean
+ *  cleanup?: boolean
+ *  noShuffle?: boolean
  * }} MapReduceConfiguration
  */
 
@@ -47,6 +49,8 @@
  *  loadGid?: string
  *  storeGid?: string
  *  compact?: boolean
+ *  cleanup?: boolean
+ *  noShuffle?: boolean
  * }} LocalMapReduceContext
  */
 
