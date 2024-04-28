@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Search Engine</title>
     <style>
-        /* CSS styles for the search engine */
         body {
             font-family: Arial, sans-serif;
             background-color: #f1f1f1;
@@ -24,7 +24,13 @@
             margin-bottom: 20px;
         }
 
-        .search-form {
+        .logo-img {
+            display: block;
+            margin: 0 auto;
+            border-radius: 50%;
+        }
+
+        #search-form {
             display: flex;
             justify-content: center;
             align-items: center;
@@ -37,6 +43,7 @@
             font-size: 16px;
             border: 1px solid #ddd;
             border-radius: 4px;
+            margin-right: 10px;
         }
 
         .search-button {
@@ -54,15 +61,62 @@
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <div class="logo">
-            <img src="google-logo.png" alt="Google Logo">
+            <img src="./logo.png" class="logo-img" alt="Gutenberg Atlas Logo" width="200" height="200">
         </div>
-        <form class="search-form" action="https://www.google.com/search" method="GET">
-            <input class="search-input" type="text" name="q" placeholder="Search...">
+        <form id="search-form">
+            <input class="search-input" type="text" id="query" placeholder="Search a book...">
             <button class="search-button" type="submit">Search</button>
         </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', (e) => {
+            console.log('Form submitted');
+            e.preventDefault();
+            document.getElementById('result').innerHTML = '';
+
+            const query = document.getElementById('query').value;
+            fetch('http://localhost:9999/query', {
+                method: 'POST',
+                body: JSON.stringify(query),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('result');
+                    data.forEach(item => {
+                        const url = item[0];
+                        const metadata = item[1];
+                        const title = metadata.title;
+                        const author = metadata.author;
+                        const cover = metadata.cover;
+                        const date = metadata.date;
+                        const language = metadata.language;
+
+                        const itemDiv = document.createElement('div');
+                        itemDiv.innerHTML = `
+                    <h3>Title: ${title}</h3>
+                    <p>Author: ${author}</p>
+                    <p>Cover: ${cover}</p>
+                    <p>Date: ${date}</p>
+                    <p>Language: ${language}</p>
+                `;
+                        resultDiv.appendChild(itemDiv);
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
     </div>
 </body>
+
 </html>

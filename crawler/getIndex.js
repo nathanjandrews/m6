@@ -32,6 +32,7 @@ const m1 = (key, value) => {
   const filteredTokens = stopwords.removeStopwords(tokens);
   const index = new Map();
   filteredTokens.map((token) => {
+    token = token.toLowerCase();
     index[token] = index[token] ? index[token] + 1 : 1;
   });
   const indexArray = Object.entries(index).map(([k, v]) => ({ [k]: `${key} ${v}` }));

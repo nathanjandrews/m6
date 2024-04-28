@@ -46,16 +46,19 @@ const m1 = (key, value) => {
   const authorElement = dom.window.document.querySelector('a[itemprop="creator"]');
   const coverElement = dom.window.document.querySelector('image[itemprop="image"]');
   const dateElement = dom.window.document.querySelector('td[itemprop="datePublished"]');
+  const languageElement = dom.window.document.querySelector('tr[itemprop="inLanguage"] td');
   const title = titleElement ? titleElement.textContent.trim() : '';
   const author = authorElement ? authorElement.textContent.trim() : '';
   const cover = coverElement ? coverElement.src : '';
   const date = dateElement ? dateElement.textContent.trim() : '';
+  const language = languageElement ? languageElement.textContent.trim() : '';
   obj[value] ={
     html: res.text(),
     title: title,
     author: author,
     cover: cover,
     date:  date,
+    language: language,
   }
   return obj;
 };
