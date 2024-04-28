@@ -2,17 +2,12 @@ global.nodeConfig = { ip: "127.0.0.1", port: 8080 };
 const distribution = require("../distribution");
 const id = distribution.util.id;
 const groups = require("../distribution/all/groups");
-const TYPES = require("../distribution/util/types.js");
 const { performance } = require("perf_hooks");
 const http = require("http");
-
 const args = require("yargs").argv;
-const nodesPath = args.env === "dev" ? "./ec2-nodes.json" : "./nodes.json";
 const port = args.port || 9999;
+const nodesPath = args.env === "dev" ? "./ec2-nodes.json" : "./nodes.json";
 const nodes = require(nodesPath);
-
-/** @type {string} */
-const query = args.query;
 
 const indexerGroup = {};
 for (const node of nodes) {
@@ -49,8 +44,8 @@ groups(crawlerConfig).put(crawlerConfig, indexerGroup, (e, v) => {
             req.on("end", () => {
               const queryString = JSON.parse(body);
               console.log("Received query:", queryString);
+              res.writeHead(200, headers);
               handleQuery(queryString, (x) => {
-                res.writeHead(200, headers);
                 res.end(JSON.stringify(x));
               });
             });
@@ -77,13 +72,15 @@ const handleQuery = (query, callback) => {
   let cnt = 0;
   let step = 0;
   words.map((word) => {
+    word = word.toLowerCase();
     distribution.indexer.store.get(word, (e, v) => {
       cnt++;
       if (e) {
         if (e.message.includes("no such file")) {
           // console.log("[query result]:", []);
         } else {
-          callback([]);
+          // callback([]);
+          console.log(e.message);
         }
       } else if (v) {
         queryResult.push(v);

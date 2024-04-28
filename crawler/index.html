@@ -59,6 +59,12 @@
         .search-button:hover {
             background-color: #3367d6;
         }
+        
+        .cover {
+            /* max-width: 100px; */
+            /* max-height: 150px; */
+            object-fit: contain;
+        }
     </style>
 </head>
 
@@ -102,11 +108,17 @@
 
                         const itemDiv = document.createElement('div');
                         itemDiv.innerHTML = `
-                    <h3>Title: ${title}</h3>
-                    <p>Author: ${author}</p>
-                    <p>Cover: ${cover}</p>
-                    <p>Date: ${date}</p>
-                    <p>Language: ${language}</p>
+                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex;">
+                        <div style="flex: 1;">
+                            <h3><a href="${url}" target="_blank">${title}</a></h3>
+                            <p>Author: ${author}</p>
+                            <p>Date: ${date}</p>
+                            <p>Language: ${language}</p>
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <img class="cover" src="${cover}" alt="Book Cover">
+                        </div>
+                    </div>
                 `;
                         resultDiv.appendChild(itemDiv);
                     });
