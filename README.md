@@ -4,7 +4,7 @@
 
 ### Build the Search Engine
 
-1. Start the nodes by running the following command in your terminal: `./local_start.sh 5`. You can replace `5` with the number of nodes you want to start.
+1. Start the nodes by running the following command in your terminal: `./local_nodes.sh 5`. You can replace `5` with the number of nodes you want to start.
 
 2. Use consistent hashing or rendezvous hashing to load URL using sharding by running: `node ./urls/loadUrls.js --url 100`, replace `100` with the number of urls you want to scrape.
 
