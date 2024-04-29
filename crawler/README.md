@@ -1,44 +1,32 @@
-# Crawler Workflow
+## Build the Search Engine
 
-1. retrieve URLs using the `getUrls.js` script and stores the results in the `datasets.txt` file.
-2. use the `loadUrls.js` script to load the URLs into nodes using consistent hashing and sharding.
+1. Start the nodes by running the following command in your terminal: `./local_start.sh 5`. You can replace `5` with the number of nodes you want to start.
 
-## Usage
+2. Use consistent hashing or rendezvous hashing to do URL sharding by running: `node ./crawler/loadUrls.js --url 100`
 
-1. Run the `getUrls.js` script to retrieve the URLs:
+3. Crawl HTML contents and metadata (author, cover, language, title of the books) by running: `node ./crawler/getTexts.js`
 
-   ```bash
-   node getUrls.js 1000
-   ```
+4. Do inverted index and calculate term frequency-inverse document frequency (TF-IDF) by running: `node ./crawler/getIndex.js`
 
-   This will populate the `datasets.txt` file with the retrieved URLs.
 
-   If no command line argument is provided, the default value is 100k.
+## Use the Search Engine
 
-2. Start the EC2 instance or local node by running the following command in the terminal:
-   You can run `./local_crawl_test.sh` to create these child process locally,
-   Or you can run `./ec2_crawl_test.sh` to get all the ec2 instances from your aws cli
+1. To run query results, run the following command with your query: `node ./crawler/getQuery.js --query "gutenberg project"`, replace `"gutenberg project"` with your search query.
 
-   Update the configuration settings to match the IP address and port of the running node in `./nodes.json`. For example:
+2. If you want to use the search engine on a browser:
 
-   Replace `127.0.0.1` with the IP address of the EC2 instance or local node, and `7090` with the port number specified when starting the node.
+- Start a HTTP backend server by running:
+  ```bash
+  node ./crawler/server.js
+  ```
 
-   Run the `node ./loadUrls.js` script to load the URLs into nodes using consistent hashing and sharding:
+  The server runs on port 9999
 
-   This will distribute the URLs across the nodes based on the configured node's IP address and port.
+- Open `./crawler/index.html` in your browser to search the books. Or you can use `npm install -g http-server` and run `cd ./crawler && http-server`, open [http://127.0.0.1:8080](http://127.0.0.1:8080) with your browser to run the web.
 
-   ```bash
-   node ./loadUrls.js --env local --urls 100
-   ```
+## Examples
 
-3. Use the `getTexts.js` script to scrape the HTML text from the URLs and store the pages in `storeGid` group:
+![Search Engine Screenshot](./screenshot.png)
 
-   ```bash
-   node ./getTexts.js --env local
-   ```
-
-   This script will retrieve the HTML content from each URL in the `datasets.txt` file and store the pages in the `storeGid` group directory.
-
-   Note: Make sure that the `datasets.txt` file contains the URLs you want to scrape before running this script.
-
+![Search Engine Screenshot](./screenshot-2.png)
 

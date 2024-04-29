@@ -59,10 +59,10 @@
         .search-button:hover {
             background-color: #3367d6;
         }
-        
+
         .cover {
-            /* max-width: 100px; */
-            /* max-height: 150px; */
+            max-width: 200px;
+            max-height: 300px;
             object-fit: contain;
         }
     </style>
@@ -82,7 +82,6 @@
 
     <script>
         document.getElementById('search-form').addEventListener('submit', (e) => {
-            console.log('Form submitted');
             e.preventDefault();
             document.getElementById('result').innerHTML = '';
 
@@ -97,31 +96,38 @@
                 .then(response => response.json())
                 .then(data => {
                     const resultDiv = document.getElementById('result');
-                    data.forEach(item => {
-                        const url = item[0];
-                        const metadata = item[1];
-                        const title = metadata.title;
-                        const author = metadata.author;
-                        const cover = metadata.cover;
-                        const date = metadata.date;
-                        const language = metadata.language;
+                    if (data.length === 0) {
+                        resultDiv.innerHTML = `
+                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; text-align: center;">
+                        <p>No results found</p>
+                    </div>
+                        `;
+                    } else {
+                        data.forEach(item => {
+                            const url = item[0];
+                            const metadata = item[1];
+                            const { title, author, cover, date, language, subject, originUrl } = metadata;
 
-                        const itemDiv = document.createElement('div');
-                        itemDiv.innerHTML = `
+                            const itemDiv = document.createElement('div');
+                            itemDiv.innerHTML = `
                     <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex;">
                         <div style="flex: 1;">
                             <h3><a href="${url}" target="_blank">${title}</a></h3>
                             <p>Author: ${author}</p>
                             <p>Date: ${date}</p>
                             <p>Language: ${language}</p>
+                            <p>Subject: ${metadata.subject}</p>
+                            <p> Read more: <a href="${originUrl}" target="_blank">${originUrl}</a></p>
                         </div>
                         <div style="flex: 1; text-align: center;">
-                            <img class="cover" src="${cover}" alt="Book Cover">
+                            <img class="cover" src="${cover || './logo.png'}" alt="Book Cover">
                         </div>
                     </div>
                 `;
-                        resultDiv.appendChild(itemDiv);
-                    });
+                            resultDiv.appendChild(itemDiv);
+                        });
+                    }
+
                 })
                 .catch(error => {
                     console.error('Error:', error);

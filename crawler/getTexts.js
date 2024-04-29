@@ -56,11 +56,15 @@ const m1 = (key, value) => {
   const languageElement = dom.window.document.querySelector(
     'tr[itemprop="inLanguage"] td'
   );
+  const subjectElement = dom.window.document.querySelector(
+    'td[property="dcterms:subject"] a'
+  );
   const title = titleElement ? titleElement.textContent.trim() : "";
   const author = authorElement ? authorElement.textContent.trim() : "";
   const cover = coverElement ? coverElement.src : "";
   const date = dateElement ? dateElement.textContent.trim() : "";
   const language = languageElement ? languageElement.textContent.trim() : "";
+  const subject = subjectElement ? subjectElement.textContent.trim() : "";
   obj[value] = {
     html: res.text(),
     title: title,
@@ -68,6 +72,8 @@ const m1 = (key, value) => {
     cover: cover,
     date: date,
     language: language,
+    subject: subject,
+    originUrl: `${baseUrl}/${ebookId}`,
   };
   return obj;
 };

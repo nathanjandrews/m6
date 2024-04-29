@@ -49,6 +49,7 @@ const r1 = (key, values) => {
       unique[url] = parseInt(cnt);
     }
   });
+  // .sort((a, b) => {return a[1] === b[1] ? a[0].localeCompare(b[0]) : b[1] - a[1];})
   const out = Object.entries(unique).map(([k, v]) => `${k} ${v}`);
   return { [key]: out.join(' ') };
 };
