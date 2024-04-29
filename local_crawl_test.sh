@@ -21,5 +21,5 @@ node_configs_string=$(
     echo "${node_configs[*]}"
 )
 
-echo "[$node_configs_string]" >./crawler/nodes.json
+echo "[$node_configs_string]" >./nodes.json
 wait

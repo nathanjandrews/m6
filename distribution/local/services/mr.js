@@ -27,53 +27,55 @@ const mr = {};
 mr.map = async (context, keys, mapFn, callback) => {
   const cb = callback || function() {};
   const memStore = global.distribution.local[context.memory ? 'mem' : 'store'];
-  
+
   const storeKeys = [];
   // each promise in this array will
   const mapPromises = keys.map(
-    (key) =>
-      new Promise((resolve, reject) => {
-        memStore.get({ gid: context.loadGid, key }, (e, v) => {
-          if (e) {
-            reject(e);
-          } else {
-            storeKeys.push(key);
-            const res = mapFn(key, v);
-            resolve({[key]: res});
-          }
-        });
-      }),
+      (key) =>
+        new Promise((resolve, reject) => {
+          memStore.get({gid: context.loadGid, key}, (e, v) => {
+            if (e) {
+              reject(e);
+            } else {
+              storeKeys.push(key);
+              const res = mapFn(key, v);
+              resolve({[key]: res});
+            }
+          });
+        }),
   );
   const settledMapPromises = await Promise.allSettled(mapPromises);
   const mapResults = [];
   for (const settledPromise of settledMapPromises) {
     if (settledPromise.status === 'fulfilled') {
       mapResults.push(settledPromise.value);
+    } else {
+      // console.log('[map error]:', settledPromise.reason);
     }
   }
 
-  // console.log('[mapper tasks count]: ', mapResults.length, mapResults);
+  // console.log('[mapper tasks count]: ', mapResults.length, mapResults, storeKeys);
   const mr = global.routesServiceStore[context.serviceName];
   if (context.compact) {
-    mr.storageKey = keys.map(k => k.slice(0, 2)).join('~');
+    mr.storageKey = keys.map((k) => k.slice(0, 2)).join('~');
     memStore.put(
-      mapResults.map((res) => Object.values(res)[0]).flat(),
-      { gid: context.storeGid, key: mr.storageKey },
-      () => cb(null, true),
+        mapResults.map((res) => Object.values(res)[0]).flat(),
+        {gid: context.storeGid, key: mr.storageKey},
+        () => cb(null, true),
     );
   } else {
     mr.storageKey = storeKeys;
     let cnt = 0;
     mapResults.map((res) => {
       memStore.put(
-        Object.values(res)[0],
-        { gid: context.storeGid, key: Object.keys(res)[0] },
-        (e, v) => {
-          cnt++;
-          if (cnt === storeKeys.length) {
-            cb(null, true);
-          }
-        },
+          Object.values(res)[0],
+          {gid: context.storeGid, key: Object.keys(res)[0]},
+          (e, v) => {
+            cnt++;
+            if (cnt === storeKeys.length) {
+              cb(null, true);
+            }
+          },
       );
     });
   }
@@ -112,7 +114,7 @@ mr.shuffle = async (context, keys, hash, callback) => {
             resolve(v);
           }
         });
-      })
+      });
     } else {
       memStore.get({gid: context.storeGid, key}, (e, v) => {
         if (e) {
@@ -206,7 +208,7 @@ mr.group = (context, kvPairs, callback) => {
   const cb = callback || function() {};
   const mr = global.routesServiceStore[context.serviceName];
 
-  mr.reduceState = mr.reduceState ||  {};
+  mr.reduceState = mr.reduceState || {};
   mr.reduceState.values = mr.reduceState.values || {};
 
   for (const {key, value} of kvPairs) {
@@ -245,15 +247,15 @@ mr.reduce = (context, reduceFn, callback) => {
     let cnt = 0;
     for (const reduction of reductions) {
       global.distribution[context.storeGid].store.merge(
-        Object.values(reduction)[0],
-        Object.keys(reduction)[0],
-        (e, v) => {
-          cnt++;
-          if (cnt === reductions.length) {
-            cb(null, reductions);
-          }
-        }
-      )
+          Object.values(reduction)[0],
+          Object.keys(reduction)[0],
+          (e, v) => {
+            cnt++;
+            if (cnt === reductions.length) {
+              cb(null, reductions);
+            }
+          },
+      );
     }
   } else {
     cb(null, reductions);

@@ -136,9 +136,9 @@ const store = (config) => {
 
     /**
      * Merge method, only for MR search engine
-     * @param {any} value 
-     * @param {string} nullableKey 
-     * @param {ServiceCallback} callback 
+     * @param {any} value
+     * @param {string} nullableKey
+     * @param {ServiceCallback} callback
      */
     merge: (value, nullableKey, callback) => {
       const cb = callback || function() {};

@@ -96,7 +96,7 @@ store.get = async function(nullableKey, callback) {
     try {
       const fileNames = await fs.readdir(dirPath);
       const keys = fileNames
-        .map((k) => Buffer.from(k, 'base64').toString());
+          .map((k) => Buffer.from(k, 'base64').toString());
       cb(null, keys);
     } catch (error) {
       cb(error);
@@ -206,7 +206,7 @@ store.merge = async function(value, nullableKey, callback) {
       cb(new Error(error));
     }
   }
-}
+};
 
 module.exports = store;
 

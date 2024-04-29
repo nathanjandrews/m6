@@ -2,3 +2,7 @@ node_modules
 submission.zip
 submission/javascript/src/main
 # store
+
+ec2-nodes.json
+ec2-ssh.sh
+ec2-ssh_1.sh
