@@ -25,12 +25,22 @@ groups(crawlerConfig).put(crawlerConfig, indexerGroup, (e, v) => {
 const m1 = (key, value) => {
   const natural = global.require('natural');
   const stopwords = global.require('stopword');
-  const content = Object.values(value)[0].html;
+  const content = Object.values(value)[0].html.toLowerCase();
 
   const tokenizer = new natural.WordTokenizer();
   const tokens = tokenizer.tokenize(content);
   const filteredTokens = stopwords.removeStopwords(tokens);
+
+  const { TfIdf } = natural;
+  const tfidf = new TfIdf();
+  tfidf.addDocument(filteredTokens);
+  // const tfidfScores = [];
   const index = new Map();
+  tfidf.listTerms(0).forEach((term) => {
+    // tfidfScores.push({ term: term.term, score: term.tfidf });
+    index[term] = term.tf;
+  });
+
   filteredTokens.map((token) => {
     token = token.toLowerCase();
     index[token] = index[token] ? index[token] + 1 : 1;

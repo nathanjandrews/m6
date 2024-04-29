@@ -255,8 +255,9 @@ mr.reduce = (context, reduceFn, callback) => {
         }
       )
     }
+  } else {
+    cb(null, reductions);
   }
-  cb(null, reductions);
 };
 
 /**
