@@ -21,12 +21,12 @@
 - Start a HTTP backend server by running:
 
   ```bash
-  node ./crawler/server.js
+  node ./web/server.js
   ```
 
   The server runs on port 9999
 
-- Open `./crawler/index.html` in your browser to search the books. Or you can use `npm install -g http-server` and run `cd ./crawler && http-server`, open [http://127.0.0.1:8080](http://127.0.0.1:8080) with your browser to run the web.
+- Open `./web/index.html` in your browser to search the books. Or you can use `npm install -g http-server` and run `cd ./web && http-server`, open [http://127.0.0.1:8080](http://127.0.0.1:8080) with your browser to run the web.
 
 ## Examples
 

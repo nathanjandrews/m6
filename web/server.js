@@ -83,78 +83,150 @@ const handleQuery = (query, N, callback) => {
   let cnt = 0;
   let step = 0;
   let errCnt = 0;
-  words.map((word) => {
-    word = word.toLowerCase();
-    distribution.indexer.store.get(word, (e, v) => {
-      cnt++;
-      if (e) {
-        if (e.message.includes('no such file')) {
-          // console.log('[not found]:', word, e.message);
-        }
-        errCnt++;
-        if (errCnt === words.length) {
+
+  distribution.indexer.store.get(query.toLowerCase(), (e, v) => {
+    if (e) {
+      if (e.message.includes('no such file')) {
+        if (words.length > 1) {
+          splitQuery(words);
+        } else {
           callback([]);
         }
-      } else if (v) {
-        const urls = v.split(' '); // url1 tf1 url2 tf2 ...
-        const nt = urls.length / 2; // the number of documents where term appears
-        const IDF = 1 + Math.log(N / (1 + nt)); // Inverse Document Frequency
-        for (let i = 0; i < urls.length; i += 2) {
-          const url = urls[i];
-          const TF = urls[i + 1];
-          const TFIDF = TF * IDF;
-          if (queryResult.has(word)) {
-            queryResult.get(word).push({url, TFIDF});
-          } else {
-            queryResult.set(word, [{url, TFIDF}]);
-          }
-        }
-
-        if (cnt === words.length) {
-          const map = new Map();
-          queryResult.forEach((value, key) => {
-            value.map((res) => {
-              const url = res.url;
-              const TFIDF = res.TFIDF;
-              if (map.has(url)) {
-                map.set(url, map.get(url) + TFIDF);
-              } else {
-                map.set(url, TFIDF);
-              }
-            });
-          });
-          const sorted = Array.from(map).sort((a, b) => b[1] - a[1]);
-          const results = [];
-          sorted.map((item) => {
-            distribution.scraper.store.get(item[0], (e, v) => {
-              step++;
-              const meta = Object.values(v)[0];
-              const obj = {};
-              obj.title = meta.title || 'unknown';
-              obj.author = meta.author || 'Anonymous';
-              obj.cover = meta.cover || '';
-              obj.date = meta.date || 'unknown';
-              obj.language = meta.language || 'unknown';
-              obj.originUrl = meta.originUrl || item[0];
-              obj.subject = meta.subject || 'unknown';
-              results.push([item[0], obj]);
-
-              if (step === sorted.length) {
-                const endTime = performance.now();
-                const procedureTime = endTime - startTime;
-                console.log(
-                    '[query] \ncount of nodes:',
-                    Object.keys(indexerGroup).length,
-                    '\nprocedure time:',
-                    procedureTime.toFixed(4),
-                    'milliseconds',
-                );
-                callback(results);
-              }
-            });
-          });
+      } else {
+        console.error(e);
+      }
+    } else {
+      const urls = v.split(' ');
+      const nt = urls.length / 2;
+      const IDF = 1 + Math.log(N / (1 + nt));
+      for (let i = 0; i < urls.length; i += 2) {
+        const url = urls[i];
+        const TF = urls[i + 1];
+        const TFIDF = TF * IDF;
+        if (queryResult.has(query)) {
+          queryResult.get(query).push({url, TFIDF});
+        } else {
+          queryResult.set(query, [{url, TFIDF}]);
         }
       }
-    });
+      const map = new Map();
+      queryResult.forEach((tfidfs, word) => {
+        tfidfs.map((tfidf) => {
+          const url = tfidf.url;
+          const TFIDF = tfidf.TFIDF;
+          if (map.has(url)) {
+            map.set(url, map.get(url) + TFIDF);
+          } else {
+            map.set(url, TFIDF);
+          }
+        });
+      });
+      const sorted = Array.from(map).sort((a, b) => b[1] - a[1]);
+      const results = [];
+      sorted.map((item) => {
+        distribution.scraper.store.get(item[0], (e, v) => {
+          step++;
+          const meta = Object.values(v)[0];
+          const obj = {};
+          obj.title = meta.title || 'unknown';
+          obj.author = meta.author || 'Anonymous';
+          obj.cover = meta.cover || '';
+          obj.date = meta.date || 'unknown';
+          obj.language = meta.language || 'unknown';
+          obj.originUrl = meta.originUrl || item[0];
+          obj.subject = meta.subject || 'unknown';
+          results.push([item[0], obj]);
+
+          if (step === sorted.length) {
+            const endTime = performance.now();
+            const procedureTime = endTime - startTime;
+            console.log(
+                '[query] \ncount of nodes:',
+                Object.keys(indexerGroup).length,
+                '\nprocedure time:',
+                procedureTime.toFixed(4),
+                'milliseconds',
+            );
+            callback(results);
+          }
+        });
+      });
+    }
   });
+  const splitQuery = (words) => {
+    words.map((word) => {
+      word = word.toLowerCase();
+      distribution.indexer.store.get(word, (e, v) => {
+        cnt++;
+        if (e) {
+          if (e.message.includes('no such file')) {
+            // console.log('[not found]:', word, e.message);
+          }
+          errCnt++;
+          if (errCnt === words.length) {
+            callback([]);
+          }
+        } else if (v) {
+          const urls = v.split(' '); // url1 tf1 url2 tf2 ...
+          const nt = urls.length / 2; // the number of documents where term appears
+          const IDF = 1 + Math.log(N / (1 + nt)); // Inverse Document Frequency
+          for (let i = 0; i < urls.length; i += 2) {
+            const url = urls[i];
+            const TF = urls[i + 1];
+            const TFIDF = TF * IDF;
+            if (queryResult.has(word)) {
+              queryResult.get(word).push({url, TFIDF});
+            } else {
+              queryResult.set(word, [{url, TFIDF}]);
+            }
+          }
+
+          if (cnt === words.length) {
+            const map = new Map();
+            queryResult.forEach((value, key) => {
+              value.map((res) => {
+                const url = res.url;
+                const TFIDF = res.TFIDF;
+                if (map.has(url)) {
+                  map.set(url, map.get(url) + TFIDF);
+                } else {
+                  map.set(url, TFIDF);
+                }
+              });
+            });
+            const sorted = Array.from(map).sort((a, b) => b[1] - a[1]);
+            const results = [];
+            sorted.map((item) => {
+              distribution.scraper.store.get(item[0], (e, v) => {
+                step++;
+                const meta = Object.values(v)[0];
+                const obj = {};
+                obj.title = meta.title || 'unknown';
+                obj.author = meta.author || 'Anonymous';
+                obj.cover = meta.cover || '';
+                obj.date = meta.date || 'unknown';
+                obj.language = meta.language || 'unknown';
+                obj.originUrl = meta.originUrl || item[0];
+                obj.subject = meta.subject || 'unknown';
+                results.push([item[0], obj]);
+
+                if (step === sorted.length) {
+                  const endTime = performance.now();
+                  const procedureTime = endTime - startTime;
+                  console.log(
+                      '[query] \ncount of nodes:',
+                      Object.keys(indexerGroup).length,
+                      '\nprocedure time:',
+                      procedureTime.toFixed(4),
+                      'milliseconds',
+                  );
+                  callback(results);
+                }
+              });
+            });
+          }
+        }
+      });
+    });
+  };
 };
