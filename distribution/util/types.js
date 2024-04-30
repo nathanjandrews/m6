@@ -33,9 +33,12 @@
  *  map: MapReduceMapFn<T>
  *  reduce: MapReduceReduceFn<T>
  *  memory?: boolean
- *  loadGid?: string - load files from a different gid
- *  storeGid?: string - store files to a different gid
+ *  loadGid?: string
+ *  storeGid?: string
  *  compact?: boolean
+ *  cleanup?: boolean
+ *  noShuffle?: boolean
+ *  reduceStore?: boolean
  * }} MapReduceConfiguration
  */
 
@@ -44,9 +47,12 @@
  *  gid: string,
  *  serviceName: string,
  *  memory: boolean
- *  loadGid?: string - load files from a different gid
- *  storeGid?: string - store files to a different gid
+ *  loadGid?: string
+ *  storeGid?: string
  *  compact?: boolean
+ *  cleanup?: boolean
+ *  noShuffle?: boolean
+ *  reduceStore?: boolean
  * }} LocalMapReduceContext
  */
 

@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Engine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f1f1f1;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-img {
+            display: block;
+            margin: 0 auto;
+            border-radius: 50%;
+        }
+
+        #search-form {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 400px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+        }
+
+        .search-button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #4285f4;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .search-button:hover {
+            background-color: #3367d6;
+        }
+
+        .cover {
+            max-width: 200px;
+            max-height: 300px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="logo">
+            <img src="./logo.png" class="logo-img" alt="Gutenberg Atlas Logo" width="200" height="200">
+        </div>
+        <form id="search-form">
+            <input class="search-input" type="text" id="query" placeholder="Search a book...">
+            <button class="search-button" type="submit">Search</button>
+        </form>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        document.getElementById('search-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            document.getElementById('result').innerHTML = '';
+
+            const query = document.getElementById('query').value;
+            fetch('http://localhost:9999/query', {
+                method: 'POST',
+                body: JSON.stringify(query),
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    const resultDiv = document.getElementById('result');
+                    if (data.length === 0) {
+                        resultDiv.innerHTML = `
+                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; text-align: center;">
+                        <p>No results found</p>
+                    </div>
+                        `;
+                    } else {
+                        data.forEach(item => {
+                            const url = item[0];
+                            const metadata = item[1];
+                            const { title, author, cover, date, language, subject, originUrl } = metadata;
+
+                            const itemDiv = document.createElement('div');
+                            itemDiv.innerHTML = `
+                    <div style="border: 1px solid #ddd; padding: 10px; margin-bottom: 10px; display: flex;">
+                        <div style="flex: 1;">
+                            <h3><a href="${url}" target="_blank">${title}</a></h3>
+                            <p>Author: ${author}</p>
+                            <p>Date: ${date}</p>
+                            <p>Language: ${language}</p>
+                            <p>Subject: ${metadata.subject}</p>
+                            <p> Read more: <a href="${originUrl}" target="_blank">${originUrl}</a></p>
+                        </div>
+                        <div style="flex: 1; text-align: center;">
+                            <img class="cover" src="${cover || './logo.png'}" alt="Book Cover">
+                        </div>
+                    </div>
+                `;
+                            resultDiv.appendChild(itemDiv);
+                        });
+                    }
+
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+        });
+    </script>
+    </div>
+</body>
+
+</html>

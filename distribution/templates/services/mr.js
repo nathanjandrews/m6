@@ -52,6 +52,8 @@ const mr = (config) => {
         storeGid: configuration.storeGid || context.gid,
         loadGid: configuration.loadGid || context.gid,
         compact: configuration.compact,
+        noShuffle: configuration.noShuffle || false,
+        reduceStore: configuration.reduceStore || false,
       };
 
       groupServices.routes.put(localMrService, mrServiceName, (e, v) => {
@@ -70,6 +72,9 @@ const mr = (config) => {
                 console.error('mr map:', e);
                 return cb(e);
               }
+              if (configuration.noShuffle) {
+                return cb(null, v);
+              }
 
               // at this point we know that all of the nodes have completed the
               // map phase. Now we need to shuffle and group the data
@@ -78,8 +83,12 @@ const mr = (config) => {
                   {service: mrServiceName, method: 'shuffle'},
                   (e, v) => {
                     if (Object.keys(e).length > 0) {
-                      console.error('mr shuffle & group:', e);
-                      return cb(e);
+                      if (Object.values(e)[0].message.includes('not yet supported')) {
+                        return cb(null);
+                      } else {
+                        console.error('mr shuffle & group:', e);
+                        return cb(e);
+                      }
                     }
 
                     // at this point we know that all of the nodes have
@@ -98,11 +107,15 @@ const mr = (config) => {
                           const reductions = Object.values(v).flat();
 
                           // clean up the "local" Map-Reduce service
-                          groupServices.comm.send(
-                              [localMapReduceContext],
-                              {service: mrServiceName, method: 'cleanup'},
-                              () => cb(null, reductions),
-                          );
+                          if (configuration.cleanup) {
+                            groupServices.comm.send(
+                                [localMapReduceContext],
+                                {service: mrServiceName, method: 'cleanup'},
+                                () => cb(null, reductions),
+                            );
+                          } else {
+                            cb(null, reductions);
+                          }
                         },
                     );
                   },

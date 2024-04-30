@@ -12,8 +12,8 @@ num_nodes=$1
 
 node_configs=()
 for ((i = 0; i < num_nodes; i++)); do
-    node ./distribution.js --port $((7090 + i)) &
-    node_configs+=("{\"ip\": \"127.0.0.1\", \"port\": $((7090 + i))}")
+    node ./distribution.js --port $((7000 + i)) &
+    node_configs+=("{\"ip\": \"127.0.0.1\", \"port\": $((7000 + i))}")
 done
 
 node_configs_string=$(
@@ -21,5 +21,5 @@ node_configs_string=$(
     echo "${node_configs[*]}"
 )
 
-echo "[$node_configs_string]" >./crawler/nodes.json
+echo "[$node_configs_string]" >./nodes.json
 wait

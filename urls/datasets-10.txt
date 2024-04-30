@@ -1,0 +1,10 @@
+https://atlas.cs.brown.edu/data/gutenberg/0/6/old/liber11.txt
+https://atlas.cs.brown.edu/data/gutenberg/0/7/7-0.txt
+https://atlas.cs.brown.edu/data/gutenberg/0/7/old/7.txt
+https://atlas.cs.brown.edu/data/gutenberg/0/7/old/mayfl11.txt
+https://atlas.cs.brown.edu/data/gutenberg/0/8/8.txt
+https://atlas.cs.brown.edu/data/gutenberg/9/0/0/9009/9009-readme.txt
+https://atlas.cs.brown.edu/data/gutenberg/0/9/old/9.txt
+https://atlas.cs.brown.edu/data/gutenberg/1/0/0/0/10000/10000-0.txt
+https://atlas.cs.brown.edu/data/gutenberg/1/0/0/0/10000/old/10000.txt
+https://atlas.cs.brown.edu/data/gutenberg/1/0/0/0/10000/old/magna01.txt

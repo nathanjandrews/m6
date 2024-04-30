@@ -28,37 +28,62 @@ mr.map = async (context, keys, mapFn, callback) => {
   const cb = callback || function() {};
   const memStore = global.distribution.local[context.memory ? 'mem' : 'store'];
 
+  const storeKeys = [];
   // each promise in this array will
-  const mapPromises = keys.map((key) => new Promise((resolve, reject) => {
-    memStore.get({gid: context.loadGid, key}, (e, v) => {
-      if (e) {
-        reject(e);
-      } else {
-        resolve(mapFn(key, v));
-      }
-    });
-  }));
-
+  const mapPromises = keys.map(
+      (key) =>
+        new Promise((resolve, reject) => {
+          memStore.get({gid: context.loadGid, key}, (e, v) => {
+            if (e) {
+              reject(e);
+            } else {
+              storeKeys.push(key);
+              const res = mapFn(key, v);
+              resolve({[key]: res});
+            }
+          });
+        }),
+  );
   const settledMapPromises = await Promise.allSettled(mapPromises);
   const mapResults = [];
   for (const settledPromise of settledMapPromises) {
     if (settledPromise.status === 'fulfilled') {
       mapResults.push(settledPromise.value);
+    } else {
+      if (!settledPromise.reason.message.includes('no such file')) {
+        console.log('[map error]:', settledPromise.reason);
+      }
     }
   }
 
+  console.log('[mapper tasks count]: ', mapResults.length);
+  if (mapResults.length === 0) {
+    cb(null, true);
+    return;
+  }
   const mr = global.routesServiceStore[context.serviceName];
   if (context.compact) {
-    mr.storageKey = keys.join('~');
-    memStore.put(mapResults.flat(), {gid: context.storeGid, key: mr.storageKey}, () =>
-      cb(null, true),
+    mr.storageKey = keys.map((k) => k.slice(0, 2)).join('~');
+    memStore.put(
+        mapResults.map((res) => Object.values(res)[0]).flat(),
+        {gid: context.storeGid, key: mr.storageKey},
+        () => cb(null, true),
     );
   } else {
-    mr.storageKey = keys;
-    mapResults.map((res, i) => {
-      memStore.put(res, {gid: context.storeGid, key: keys[i]}, (e, v) => {});
+    mr.storageKey = storeKeys;
+    let cnt = 0;
+    mapResults.map((res) => {
+      memStore.put(
+          Object.values(res)[0],
+          {gid: context.storeGid, key: Object.keys(res)[0]},
+          (e, v) => {
+            cnt++;
+            if (cnt === storeKeys.length) {
+              cb(null, true);
+            }
+          },
+      );
     });
-    cb(null, true);
   }
 };
 
@@ -74,9 +99,8 @@ mr.shuffle = async (context, keys, hash, callback) => {
   const cb = callback || function() {};
   const memStore = global.distribution.local[context.memory ? 'mem' : 'store'];
 
-
   // TODO: handle non-compat data retrieval in the shuffle phase
-  if (!context.compact) {
+  if (context.noShuffle) {
     cb(new Error('compact not yet supported in shuffle phase'));
     return;
   }
@@ -87,14 +111,26 @@ mr.shuffle = async (context, keys, hash, callback) => {
    * node during the map phase
    * @type {any[]} */
   const mapResults = await new Promise((resolve, reject) => {
-    memStore.get({gid: context.storeGid, key}, (e, v) => {
-      if (e) {
-        reject(e);
-      } else {
-        resolve(v);
-      }
-    });
-  }); ;
+    if (Array.isArray(key)) {
+      key.map((k) => {
+        memStore.get({gid: context.storeGid, key: k}, (e, v) => {
+          if (e) {
+            reject(e);
+          } else {
+            resolve(v);
+          }
+        });
+      });
+    } else {
+      memStore.get({gid: context.storeGid, key}, (e, v) => {
+        if (e) {
+          reject(e);
+        } else {
+          resolve(v);
+        }
+      });
+    }
+  });
 
   // we transform the mapped data into key value pairs, each of which can be
   // sent to a different node for grouping
@@ -178,18 +214,12 @@ mr.group = (context, kvPairs, callback) => {
   const cb = callback || function() {};
   const mr = global.routesServiceStore[context.serviceName];
 
-  if (!mr.reduceState) {
-    mr.reduceState = {};
-    mr.reduceState.values = {};
-  }
+  mr.reduceState = mr.reduceState || {};
+  mr.reduceState.values = mr.reduceState.values || {};
 
   for (const {key, value} of kvPairs) {
-    if (!mr.reduceState.values[key]) {
-      mr.reduceState.values[key] = [];
-    }
-
-    const valuesToReduce = mr.reduceState.values[key];
-    valuesToReduce.push(value);
+    mr.reduceState.values[key] = mr.reduceState.values[key] || [];
+    mr.reduceState.values[key].push(value);
   }
 
   cb(null, true);
@@ -219,7 +249,23 @@ mr.reduce = (context, reduceFn, callback) => {
   for (const [key, valuesToReduce] of Object.entries(mr.reduceState.values)) {
     reductions.push(reduceFn(key, valuesToReduce));
   }
-  cb(null, reductions);
+  if (context.reduceStore) {
+    let cnt = 0;
+    for (const reduction of reductions) {
+      global.distribution[context.storeGid].store.merge(
+          Object.values(reduction)[0],
+          Object.keys(reduction)[0],
+          (e, v) => {
+            cnt++;
+            if (cnt === reductions.length) {
+              cb(null, reductions);
+            }
+          },
+      );
+    }
+  } else {
+    cb(null, reductions);
+  }
 };
 
 /**

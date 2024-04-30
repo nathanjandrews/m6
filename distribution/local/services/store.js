@@ -96,7 +96,7 @@ store.get = async function(nullableKey, callback) {
     try {
       const fileNames = await fs.readdir(dirPath);
       const keys = fileNames
-        .map((k) => Buffer.from(k, 'base64').toString());
+          .map((k) => Buffer.from(k, 'base64').toString());
       cb(null, keys);
     } catch (error) {
       cb(error);
@@ -159,6 +159,52 @@ store.del = async function(nullableKey, callback) {
     cb(null, value);
   } catch (error) {
     cb(new Error(error));
+  }
+};
+
+/**
+ * Store MERGE method - merge two files only for MapReduce
+ * @param {string} value
+ * @param {{key: string, gid: string}} nullableKey
+ * @param {ServiceCallback} [callback]
+ */
+store.merge = async function(value, nullableKey, callback) {
+  await setupDirectories();
+  const cb = callback || function() {};
+  const {key, gid} = nullableKey;
+  const fileName = Buffer.from(key).toString('base64');
+  const filePath = path.join(GROUPS_DIR_PATH, gid, fileName);
+
+  const parseToMap = (str) => {
+    const map = new Map();
+    const parts = str.split(' ');
+    for (let i = 0; i < parts.length; i += 2) {
+      map.set(parts[i], parts[i + 1]);
+    }
+    return map;
+  };
+
+  try {
+    const existingValue = (await fs.readFile(filePath)).toString();
+    const existingMap = parseToMap(existingValue);
+    const currentMap = parseToMap(value);
+    for (const [url, count] of currentMap) {
+      const existingCount = existingMap.get(url) || 0;
+      existingMap.set(url, existingCount + count);
+    }
+    const merged = [];
+    for (const [url, count] of existingMap) {
+      merged.push(`${url} ${count}`);
+    }
+    await fs.writeFile(filePath, serialize(merged.join(' ')));
+    cb(null, merged.join(' '));
+  } catch (error) {
+    if (error.code === 'ENOENT') {
+      await fs.writeFile(filePath, serialize(value));
+      cb(null, value);
+    } else {
+      cb(new Error(error));
+    }
   }
 };
 
