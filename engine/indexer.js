@@ -43,11 +43,6 @@ const m1 = (key, value) => {
     index[term] = term.tf;
   });
 
-  filteredTokens.map((token) => {
-    token = token.toLowerCase();
-    index[token] = index[token] ? index[token] + 1 : 1;
-  });
-
   const indexArray = Object.entries(index).map(([k, v]) => ({[k]: `${key} ${v}`}));
   return indexArray;
 };
@@ -70,11 +65,6 @@ const m2 = (key, value) => {
   tfidf.listTerms(0).forEach((term) => {
     // tfidfScores.push({ term: term.term, score: term.tfidf });
     index[term] = term.tf;
-  });
-
-  filteredTokens.map((token) => {
-    token = token.toLowerCase();
-    index[token] = index[token] ? index[token] + 1 : 1;
   });
 
   const {NGrams} = natural;

@@ -33,7 +33,7 @@ groups(crawlerConfig).put(crawlerConfig, crawlerGroup, (e, v) => {
 const m1 = (key, value) => {
   const fetch = global.require('sync-fetch');
   global.process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0;
-  console.log('[key]', key, value);
+  // console.log('[key]', key, value);
   const res = fetch(value, {
     headers: {'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html'},
   });

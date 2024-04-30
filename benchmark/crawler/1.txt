@@ -1,0 +1,27 @@
+[loader] 
+count of nodes: 1 
+count of urls: 100 
+procedure time: 153.1507 milliseconds
+[scraper] 
+count of nodes: 1 
+count of urls: 100 
+procedure time: 11980.3499 milliseconds
+
+
+[loader] 
+count of nodes: 1 
+count of urls: 1000 
+procedure time: 931.3806 milliseconds
+[scraper] 
+count of nodes: 1 
+count of urls: 1000 
+procedure time: 137554.2084 milliseconds
+
+[loader] 
+count of nodes: 1 
+count of urls: 10000 
+procedure time: 32983.6198 milliseconds
+[scraper] 
+count of nodes: 1 
+count of urls: 3308 
+procedure time: 510158.0152 milliseconds (OOM)

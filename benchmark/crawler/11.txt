@@ -1,0 +1,36 @@
+[loader] 
+count of nodes: 11 
+count of urls: 100 
+procedure time: 139.8683 milliseconds
+[scraper] 
+count of nodes: 11 
+count of urls: 100
+procedure time: 2509.1051 milliseconds
+
+[loader] 
+count of nodes: 11 
+count of urls: 1000 
+procedure time: 577.4398 milliseconds
+[scraper] 
+count of nodes: 11 
+count of urls: 1000 
+procedure time: 18302.7920 milliseconds
+
+[loader] 
+count of nodes: 11 
+count of urls: 10000 
+procedure time: 4169.5031 milliseconds
+[scraper] 
+count of nodes: 11 
+count of urls: 10000 
+procedure time: 243847.3261 milliseconds
+
+[loader] 
+count of nodes: 11 
+count of urls: 100000 
+procedure time: 75584.8976 milliseconds
+[scraper] 
+count of nodes: 11 
+count of urls: 100000 
+procedure time: 983548.3261 milliseconds (OOM)
+

@@ -28,16 +28,15 @@ async function crawl(url) {
   try {
     const response = await axios.get(url, {httpsAgent: agent});
     const dom = new jsdom.JSDOM(response.data);
+    console.log(`Crawling ${url}`, response.status);
     const curUrls = [];
-    curUrls.forEach((curUrl) => {
-      visitedUrls.add(curUrl);
-      fs.appendFileSync(urlPath, curUrl + '\n');
-    });
+    visitedUrls.add(url);
     dom.window.document.querySelectorAll('a').forEach((element) => {
       const href = element.getAttribute('href');
       if (href) {
         const resolvedUrl = new URL(href, url).href.split('?')[0];
         const cleanUrl = resolvedUrl.split('#')[0];
+        console.log(cleanUrl);
         if (
           cleanUrl &&
           cleanUrl.includes('gutenberg') &&
@@ -62,25 +61,23 @@ if (fs.existsSync(urlPath)) {
   urls.forEach((url) => {
     visitedUrls.add(url);
   });
-  crawl(
-      urls.at(-1).then(() => {
-        console.log(`Found ${visitedUrls.size} unique URLs:`);
+  crawl(urls.at(-1)).then(() => {
+    console.log(`Found ${visitedUrls.size} unique URLs:`);
 
-        fs.writeFile(
-            urlPath,
-            Array.from(visitedUrls)
-                .filter((url) => url.endsWith('.txt'))
-                .join('\n'),
-            (err) => {
-              if (err) {
-                console.error('Error writing to file:', err);
-              } else {
-                console.log('Visited URLs written to ' + urlPath);
-              }
-            },
-        );
-      }),
-  );
+    fs.writeFile(
+        urlPath,
+        Array.from(visitedUrls)
+            .filter((url) => url.endsWith('.txt'))
+            .join('\n'),
+        (err) => {
+          if (err) {
+            console.error('Error writing to file:', err);
+          } else {
+            console.log('Visited URLs written to ' + urlPath);
+          }
+        },
+    );
+  });
 } else {
   crawl(startingUrl).then(() => {
     console.log(`Found ${visitedUrls.size} unique URLs:`);

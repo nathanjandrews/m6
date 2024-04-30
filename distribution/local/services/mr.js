@@ -50,11 +50,17 @@ mr.map = async (context, keys, mapFn, callback) => {
     if (settledPromise.status === 'fulfilled') {
       mapResults.push(settledPromise.value);
     } else {
-      // console.log('[map error]:', settledPromise.reason);
+      if (!settledPromise.reason.message.includes('no such file')) {
+        console.log('[map error]:', settledPromise.reason);
+      }
     }
   }
 
-  // console.log('[mapper tasks count]: ', mapResults.length, mapResults, storeKeys);
+  console.log('[mapper tasks count]: ', mapResults.length);
+  if (mapResults.length === 0) {
+    cb(null, true);
+    return;
+  }
   const mr = global.routesServiceStore[context.serviceName];
   if (context.compact) {
     mr.storageKey = keys.map((k) => k.slice(0, 2)).join('~');

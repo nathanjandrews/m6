@@ -28,20 +28,19 @@ const store = (config) => {
      */
     put: (value, nullableKey, callback) => {
       const cb = callback || function() {};
-      const groupServices = global.distribution[context.gid];
+      const groupServices = global.distribution.local;
       groupServices.groups.get(context.gid, (e, v) => {
-        if (e && Object.keys(e).length > 0) {
+        if (e) {
           cb(e);
           return;
         }
 
         const realKey = nullableKey === null ? id.getID(value) : nullableKey;
-
-        const nids = Object.keys(v);
+        const nids = Object.values(v).map(n => id.getNID(n));
         const kid = id.getID(realKey);
 
         const selectedNid = context.hash(kid, nids);
-        const node = v[selectedNid][selectedNid];
+        const node = v[selectedNid.substring(0, 5)];
 
         const message = [value, {gid: context.gid, key: realKey}];
         const remote = {node, service: 'store', method: 'put'};
