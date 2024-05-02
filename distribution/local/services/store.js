@@ -200,6 +200,7 @@ store.merge = async function(value, nullableKey, callback) {
     cb(null, merged.join(' '));
   } catch (error) {
     if (error.code === 'ENOENT') {
+      await fs.mkdir(path.join(GROUPS_DIR_PATH, gid), {recursive: true});
       await fs.writeFile(filePath, serialize(value));
       cb(null, value);
     } else {

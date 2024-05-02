@@ -40,7 +40,7 @@ const m1 = (key, value) => {
   const index = new Map();
   tfidf.listTerms(0).forEach((term) => {
     // tfidfScores.push({ term: term.term, score: term.tfidf });
-    index[term] = term.tf;
+    index[term.term] = term.tf;
   });
 
   const indexArray = Object.entries(index).map(([k, v]) => ({[k]: `${key} ${v}`}));

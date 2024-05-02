@@ -1,0 +1,4 @@
+[indexer] 
+count of nodes: 21 
+count of urls: 10 
+procedure time: 20468.9635 milliseconds

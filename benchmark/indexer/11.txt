@@ -1,0 +1,9 @@
+[indexer] 1gram
+count of nodes: 11 
+count of urls: 10
+procedure time: 11755.2250 milliseconds
+
+[indexer] 2gram
+count of nodes: 11 
+count of urls: 10
+procedure time: 66749.8099 milliseconds

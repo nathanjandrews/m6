@@ -64,6 +64,7 @@ mr.map = async (context, keys, mapFn, callback) => {
   const mr = global.routesServiceStore[context.serviceName];
   if (context.compact) {
     mr.storageKey = keys.map((k) => k.slice(0, 2)).join('~');
+    // mr.storageKey = 'mr-compact';
     memStore.put(
         mapResults.map((res) => Object.values(res)[0]).flat(),
         {gid: context.storeGid, key: mr.storageKey},
@@ -106,6 +107,10 @@ mr.shuffle = async (context, keys, hash, callback) => {
   }
 
   const key = global.routesServiceStore[context.serviceName].storageKey;
+  if (key === undefined) {
+    callback(null, true);
+    return;
+  }
   /**
    * These are the results of calling the map function on data sent to this
    * node during the map phase

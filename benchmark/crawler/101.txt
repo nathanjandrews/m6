@@ -1,0 +1,14 @@
+[loader] 
+count of nodes: 101 (63)
+count of urls: 100 
+procedure time: 160.7057 milliseconds 
+[scraper] 
+count of nodes: 101 (63)
+count of urls: 100 
+procedure time: 2321.9768 milliseconds
+
+[loader] 
+count of nodes: 101 
+count of urls: 1000 
+procedure time: 919.6209 milliseconds
+Number of nodes: 101
