@@ -37,14 +37,24 @@ const m1 = (key, value) => {
   const res = fetch(value, {
     headers: {'User-Agent': 'Mozilla/5.0', 'Content-Type': 'text/html'},
   });
-
+  const natural = global.require('natural');
+  const stopwords = global.require('stopword');
   const html = res.text();
+  const tokenizer = new natural.WordTokenizer();
+  const tokens = tokenizer.tokenize(html);
+
+  const filteredTokens = stopwords.removeStopwords(tokens);
+  const stemmer = natural.PorterStemmer;
+  const stemmedTokens = filteredTokens.map(token => stemmer.stem(token));
+  const stemmedText = stemmedTokens.join(' ').substring(0, 50000);
+
+
   const obj = {};
   const ids = value.split('/');
   const ebookId = isNaN(parseInt(ids.at(-2))) ? ids.at(-3) : ids.at(-2);
   const baseUrl = 'https://www.gutenberg.org/ebooks';
   obj[value] = {
-    html: html,
+    html: stemmedText,
     originUrl: `${baseUrl}/${ebookId}`,
   };
   return obj;

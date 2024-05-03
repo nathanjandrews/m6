@@ -52,6 +52,15 @@ const queryWorkflow = (N) => {
               splitQuery(words);
             } else {
               console.log('[query result]:', []);
+              const endTime = performance.now();
+              const procedureTime = endTime - startTime;
+              console.log(
+                  '[query] \ncount of nodes:',
+                  Object.keys(indexerGroup).length,
+                  '\nprocedure time:',
+                  procedureTime.toFixed(4),
+                  'milliseconds',
+              );
             }
           } else {
             console.error(e);
@@ -84,6 +93,15 @@ const queryWorkflow = (N) => {
           });
           const sorted = Array.from(map).sort((a, b) => b[1] - a[1]);
           console.log('[query result]:', sorted);
+          const endTime = performance.now();
+          const procedureTime = endTime - startTime;
+          console.log(
+              '[query] \ncount of nodes:',
+              Object.keys(indexerGroup).length,
+              '\nprocedure time:',
+              procedureTime.toFixed(4),
+              'milliseconds',
+          );
         }
       },
   );

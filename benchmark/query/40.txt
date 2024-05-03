@@ -1,0 +1,9 @@
+[query] 
+count of nodes: 40 
+procedure time: 20.5344 milliseconds
+[query] 
+count of nodes: 40 
+procedure time: 17.8268 milliseconds
+[query] 
+count of nodes: 40 
+procedure time: 18.3917 milliseconds
